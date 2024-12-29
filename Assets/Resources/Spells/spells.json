@@ -1,0 +1,47 @@
+[
+    {
+        "name": "Fireball",
+        "power": 50,
+        "mpCost": 30,
+        "cooldown": 3,
+        "targetingMode": "Enemy",
+        "element": "Fire",
+        "graphicPath": "Spells/Fireball"
+    },
+    {
+        "name": "Fireball2",
+        "power": 50,
+        "mpCost": 30,
+        "cooldown": 3,
+        "targetingMode": "Enemy",
+        "element": "Fire",
+        "graphicPath": "Spells/Fireball2"
+    },
+    {
+        "name": "Fireball3",
+        "power": 50,
+        "mpCost": 30,
+        "cooldown": 3,
+        "targetingMode": "Enemy",
+        "element": "Fire",
+        "graphicPath": "Spells/Fireball3"
+    },
+    {
+        "name": "Ice Shard",
+        "power": 40,
+        "mpCost": 25,
+        "cooldown": 2,
+        "targetingMode": "Enemy",
+        "element": "Ice",
+        "graphicPath": "Spells/IceShard"
+    },
+    {
+        "name": "Heal",
+        "power": 60,
+        "mpCost": 20,
+        "cooldown": 2,
+        "targetingMode": "Ally",
+        "element": "None",
+        "graphicPath": "Spells/Heal"
+    }
+]
