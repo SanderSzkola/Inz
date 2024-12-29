@@ -8,15 +8,15 @@ public class Unit : MonoBehaviour
     public string unitName;
     public bool canAct = true;
     public bool isPlayerUnit = false;
-    public int maxHP = 500;
-    public int currHP = 490;
-    public int maxMP = 500;
-    public int currMP = 490;
-    public int mpRegen = 25;
-    public int pAtk = 40;
-    public int pDef = 20;
-    public int mAtk = 40;
-    public int mDef = 20;
+    public int maxHP;
+    public int currHP;
+    public int maxMP;
+    public int currMP;
+    public int mpRegen;
+    public int pAtk;
+    public int pDef;
+    public int mAtk;
+    public int mDef;
     public List<Spell> AvailableSpells = new List<Spell>();
 
     public Dictionary<Element, int> Resistances = new Dictionary<Element, int>
@@ -37,10 +37,11 @@ public class Unit : MonoBehaviour
     [Range(0f, 1f)] private float maskGreen = 1f;
     [Range(0f, 1f)] private float maskBlue = 1f;
 
-    public void Initialize(CombatManager manager, List<Spell> spells, GameObject selectionIndicator)
+public void InitializeFromPrefab(CombatManager manager, List<Spell> spells, GameObject selectionIndicator, UnitData data)
     {
         combatManager = manager;
         AvailableSpells = spells;
+        InitializeFromData(data);
 
         this.selectionIndicator = selectionIndicator;
         this.selectionIndicator.SetActive(false);
@@ -55,6 +56,22 @@ public class Unit : MonoBehaviour
                 ApplyMask();
             }
         }
+    }
+
+    public void InitializeFromData(UnitData data)
+    {
+        unitName = data.Name;
+        isPlayerUnit = data.IsPlayerUnit;
+        maxHP = data.MaxHP;
+        currHP = data.CurrHP;
+        maxMP = data.MaxMP;
+        currMP = data.CurrMP;
+        mpRegen = data.MPRegen;
+        pAtk = data.PAtk;
+        pDef = data.PDef;
+        mAtk = data.MAtk;
+        mDef = data.MDef;
+        Resistances = data.Resistances;
     }
 
     private void ApplyMask()
@@ -99,17 +116,17 @@ public class Unit : MonoBehaviour
             return;
         }
 
-        if (!canAffordCast(spell.MPCost))
+        if (!CanAffordCast(spell.MPCost))
         {
             Debug.Log("Not enough MP!");
             return;
         }
 
-        changeMPBy(-spell.MPCost);
+        ChangeMPBy(-spell.MPCost);
         spell.Execute(this, target);
     }
 
-    public void updateStatusPanel()
+    public void UpdateStatusPanel()
     {
         if (!hpSlider)
         {
@@ -120,18 +137,18 @@ public class Unit : MonoBehaviour
         mpSlider.value = (float)currMP / maxMP;
     }
 
-    public void changeHPBy(int value)
+    public void ChangeHPBy(int value)
     {
         currHP += value;
         currHP = Mathf.Clamp(currHP, 0, maxHP); // Prevent overflow or underflow.
-        updateStatusPanel();
+        UpdateStatusPanel();
     }
 
-    public void changeMPBy(int value)
+    public void ChangeMPBy(int value)
     {
         currMP += value;
         currMP = Mathf.Clamp(currMP, 0, maxMP);
-        updateStatusPanel();
+        UpdateStatusPanel();
     }
 
     public int GetResistance(Element element)
@@ -139,14 +156,14 @@ public class Unit : MonoBehaviour
         return Resistances.TryGetValue(element, out int resistance) ? resistance : 0;
     }
 
-    public bool canAffordCast(int value)
+    public bool CanAffordCast(int value)
     {
         return currMP >= value;
     }
 
     public void ApplyDamage(int damage)
     {
-        changeHPBy(-damage);
+        ChangeHPBy(-damage);
         if (currHP <= 0)
         {
             canAct = false;
@@ -170,4 +187,23 @@ public class Unit : MonoBehaviour
         }
         RefreshSelectorColor();
     }
+}
+
+[System.Serializable]
+public class UnitData
+{
+    public string Name;
+    public bool IsPlayerUnit;
+    public int MaxHP;
+    public int CurrHP;
+    public int MaxMP;
+    public int CurrMP;
+    public int MPRegen;
+    public int PAtk;
+    public int PDef;
+    public int MAtk;
+    public int MDef;
+    public Vector2 Position;
+    public Dictionary<Element, int> Resistances;
+    public List<string> Spells;
 }

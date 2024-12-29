@@ -58,10 +58,10 @@ public class CombatManager : MonoBehaviour
 
         turnState = TurnState.PLAYER;
 
-        //if (playerUnits.Count > 0)
-        //{
-        //    activePlayerUnit = playerUnits[0];
-        //}
+        if (playerUnits.Count > 0)
+        {
+            activePlayerUnit = playerUnits[0];
+        }
         RefreshUnitSelections();
     }
 
@@ -84,7 +84,7 @@ public class CombatManager : MonoBehaviour
             Unit unit = unitGameObject.GetComponent<Unit>();
             GameObject selectionIndicator = Instantiate(selectionIndicatorPrefab, position);
 
-            unit.Initialize(this, spells, selectionIndicator);
+            unit.InitializeFromPrefab(this, spells, selectionIndicator, null); // ADD UNIT DATA WHERE NULL
             unit.transform.position = spawnPosition;
 
             // Instantiate the status panel below the unit
@@ -92,7 +92,7 @@ public class CombatManager : MonoBehaviour
             statusPanelGO.transform.position = new Vector3(xPosition, yPosition - statusPanelOffset, 0);
 
             unit.statusPanel = statusPanelGO;
-            unit.updateStatusPanel();
+            unit.UpdateStatusPanel();
 
             selectionIndicator.transform.position = new Vector3(xPosition, yPosition - selectionIndicatorOffset, 0);
 
@@ -100,7 +100,6 @@ public class CombatManager : MonoBehaviour
             unitList.Add(unit);
         }
     }
-
 
     public void SelectUnit(Unit unit)
     {
@@ -167,7 +166,7 @@ public class CombatManager : MonoBehaviour
     {
         if (turnState != TurnState.PLAYER || activePlayerUnit == null || !activePlayerUnit.canAct || targetUnit == null) return;
 
-        if (activePlayerUnit.canAffordCast(spell.MPCost))
+        if (activePlayerUnit.CanAffordCast(spell.MPCost))
         {
             spell.Execute(activePlayerUnit, targetUnit);
         }
@@ -184,5 +183,6 @@ public class CombatManager : MonoBehaviour
             unit.RefreshSelection(activePlayerUnit, targetUnit);
         foreach (Unit unit in enemyUnits)
             unit.RefreshSelection(activePlayerUnit, targetUnit);
+        spellPanel.RefreshSpellSelection(null, activePlayerUnit.canAct);
     }
 }

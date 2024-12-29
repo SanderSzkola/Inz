@@ -64,7 +64,7 @@ public class AttackSpell : Spell
     public override void Execute(Unit caster, Unit target)
     {
         if (!IsReady()) return;
-        caster.changeMPBy(MPCost * -1);
+        caster.ChangeMPBy(MPCost * -1);
         int baseDamage = Element == Element.None ? caster.pAtk : caster.mAtk;
         int targetDefense = Element == Element.None ? target.pDef : target.mDef;
         int resistance = target.GetResistance(Element);
