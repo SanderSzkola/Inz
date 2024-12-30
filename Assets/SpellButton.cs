@@ -43,12 +43,11 @@ public class SpellButton : MonoBehaviour
 
     public void Refresh(bool selected, bool canAct)
     {
-        bool shouldBeActive = canAct && !spell.IsOnCooldown();
+        bool shouldBeActive = canAct && spell != null && !spell.IsOnCooldown();
         button.interactable = shouldBeActive;
         icon.color = shouldBeActive ? Color.white : Color.gray;
 
-        int cooldown = spell.RemainingCooldown;
-        if (cooldown > 0)
+        if (spell != null && spell.RemainingCooldown > 0)
         {
             buttonText.text = spell.RemainingCooldown.ToString();
         }
@@ -62,7 +61,10 @@ public class SpellButton : MonoBehaviour
         }
         else
         {
-            frameTransform.GetComponent<Image>().color = Color.white;
+            if (frameTransform != null && frameTransform.GetComponent<Image>() != null)
+            {
+                frameTransform.GetComponent<Image>().color = Color.white;
+            }
         }
     }
 

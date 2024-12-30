@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -35,11 +36,10 @@ public class Unit : MonoBehaviour
     private float maskGreen = 1f;
     private float maskBlue = 1f;
 
-    public void InitializeFromPrefab(CombatManager manager, List<Spell> spells, GameObject selectionIndicator, UnitData data)
+    public void InitializeFromPrefab(CombatManager manager, List<Spell> globalSpellList, GameObject selectionIndicator, UnitData data)
     {
         combatManager = manager;
-        AvailableSpells = spells;
-        InitializeFromData(data);
+        InitializeFromData(data, globalSpellList);
         if (!isPlayerUnit)
         {
             // TODO: enemies have different sizes, prefab only fits for wolf, need to read and fix parameters in unity components
@@ -61,7 +61,7 @@ public class Unit : MonoBehaviour
         }
     }
 
-    public void InitializeFromData(UnitData data)
+    public void InitializeFromData(UnitData data, List<Spell> globalSpellList)
     {
         unitName = data.Name;
         isPlayerUnit = data.IsPlayerUnit;
@@ -79,16 +79,34 @@ public class Unit : MonoBehaviour
         maskRed = data.maskRed;
         maskGreen = data.maskGreen;
         maskBlue = data.maskBlue;
+
+        AvailableSpells.Clear();
+        if (data.SpellNames == null) return; // TODO each enemy should have at least one'spell' attack 
+        string[] spellNames = data.SpellNames.Split(',');
+        foreach (string spellName in spellNames)
+        {
+            string trimmedName = spellName.Trim();
+            Spell matchingSpell = globalSpellList.FirstOrDefault(spell => spell.Name.Equals(trimmedName, StringComparison.OrdinalIgnoreCase));
+            if (matchingSpell != null)
+            {
+                AvailableSpells.Add(matchingSpell.Clone());
+            }
+            else
+            {
+                Debug.LogWarning($"Spell '{trimmedName}' not found in global spell list for unit {data.Name}.");
+            }
+        }
     }
+
 
     private void ApplyMask()
     {
         // Apply mask color based on the Unit parameters
         if (maskRed == 1f && maskGreen == 1f && maskBlue == 1f) // default detected, randomize
         {
-            maskRed = Random.Range(0f, 1f);
-            maskGreen = Random.Range(0f, 1f);
-            maskBlue = Random.Range(0f, 1f);
+            maskRed = UnityEngine.Random.Range(0f, 1f);
+            maskGreen = UnityEngine.Random.Range(0f, 1f);
+            maskBlue = UnityEngine.Random.Range(0f, 1f);
         }
         Color maskColor = new Color(maskRed, maskGreen, maskBlue, 1f);
         maskSpriteRenderer.color = maskColor;
@@ -216,6 +234,7 @@ public class UnitData
     public int MDef;
     public int FireRes;
     public int IceRes;
+    public string SpellNames;
     public float maskRed;
     public float maskGreen;
     public float maskBlue;

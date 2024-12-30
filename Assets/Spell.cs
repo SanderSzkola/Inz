@@ -25,18 +25,20 @@ public abstract class Spell
     public int MPCost { get; protected set; }
     public int Cooldown { get; protected set; }
     public TargetingMode TargetingMode { get; protected set; }
+    public Element Element { get; private set; }
     public Sprite Graphic { get; protected set; }
 
     private int remainingCooldown = 0;
     public int RemainingCooldown => remainingCooldown; // the Capital is public getter, the small is private
 
-    protected Spell(string name, int power, int mpCost, int cooldown, TargetingMode targetingMode, Sprite graphic)
+    protected Spell(string name, int power, int mpCost, int cooldown, TargetingMode targetingMode, Element element, Sprite graphic)
     {
         Name = name;
         Power = power;
         MPCost = mpCost;
         Cooldown = cooldown;
         TargetingMode = targetingMode;
+        Element = element;
         Graphic = graphic;
     }
 
@@ -49,16 +51,19 @@ public abstract class Spell
     public abstract void Execute(Unit caster, Unit target);
 
     public bool IsOnCooldown() => remainingCooldown > 0;
+
+    public Spell Clone()
+    {
+        return (Spell)this.MemberwiseClone();
+    }
 }
 
 public class AttackSpell : Spell
 {
-    public Element Element { get; private set; }
-
     public AttackSpell(string name, int power, int mpCost, int cooldown, TargetingMode targetingMode, Element element, Sprite graphic)
-        : base(name, power, mpCost, cooldown, targetingMode, graphic)
+        : base(name, power, mpCost, cooldown, targetingMode, element, graphic)
     {
-        Element = element;
+        // If attackSpell had something unique that is not in baseSpell it would be here, todo?
     }
 
     public override void Execute(Unit caster, Unit target)

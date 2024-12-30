@@ -36,6 +36,15 @@
         "graphicPath": "Spells/IceShard"
     },
     {
+        "name": "Ice Comet",
+        "power": 400,
+        "mpCost": 300,
+        "cooldown": 7,
+        "targetingMode": "Enemy",
+        "element": "Ice",
+        "graphicPath": "Spells/IceComet"
+    },
+    {
         "name": "Heal",
         "power": 60,
         "mpCost": 20,

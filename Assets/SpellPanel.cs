@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class SpellPanel : MonoBehaviour
 {
     public GameObject spellSlotPrefab;
-    public int maxSpellSlots = 7;
+    public int maxSpellSlots = 5;
     private List<GameObject> spellSlots = new List<GameObject>();
     private float scale = 0.8f;
 

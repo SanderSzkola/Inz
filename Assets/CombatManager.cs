@@ -44,7 +44,7 @@ public class CombatManager : MonoBehaviour
     void Start()
     {
         turnState = TurnState.INIT;
-        spells = SpellLoader.LoadSpells(spellDefsFile); // temp for tests, each unit should load their own spells
+        spells = SpellLoader.LoadSpells(spellDefsFile);
 
         // Load player units from save file
         string json = File.ReadAllText(playerSaveFile);
