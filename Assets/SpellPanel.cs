@@ -28,7 +28,7 @@ public class SpellPanel : MonoBehaviour
 
         if (slotSpacing < 0)
         {
-            Debug.LogWarning("Not enough space for the given number of slots. Increase panel width or reduce maxSpellSlots.");
+            Debug.LogWarning("Too tight, something went wrong");
             slotSpacing = 0;
         }
 
@@ -36,13 +36,13 @@ public class SpellPanel : MonoBehaviour
 
         for (int i = 0; i < maxSpellSlots; i++)
         {
-            GameObject slot = Instantiate(spellSlotPrefab, transform); // Use the SpellPanel's RectTransform as parent.
+            GameObject slot = Instantiate(spellSlotPrefab, transform);
             spellSlots.Add(slot);
 
             RectTransform slotRect = slot.GetComponent<RectTransform>();
             if (slotRect == null)
             {
-                Debug.LogError("SpellSlotPrefab must have a RectTransform component!");
+                Debug.LogError("SpellSlotPrefab missing RectTransform");
                 continue;
             }
             // Set slot size and position.

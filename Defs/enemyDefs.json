@@ -1,0 +1,39 @@
+{
+    "enemyDefs": [
+      {
+        "key": "Wolf",
+        "unitData": {
+          "Name": "Wolf",
+          "MaxHP": 200,
+          "CurrHP": 200,
+          "MaxMP": 50,
+          "CurrMP": 50,
+          "MPRegen": 5,
+          "PAtk": 30,
+          "PDef": 10,
+          "MAtk": 0,
+          "MDef": 5,
+          "FireRes": -10,
+          "IceRes": 10
+        }
+      },
+      {
+        "key": "Bear",
+        "unitData": {
+          "Name": "Bear",
+          "MaxHP": 500,
+          "CurrHP": 500,
+          "MaxMP": 100,
+          "CurrMP": 100,
+          "MPRegen": 10,
+          "PAtk": 60,
+          "PDef": 30,
+          "MAtk": 0,
+          "MDef": 15,
+          "FireRes": 30,
+          "IceRes": 60
+        }
+      }
+    ]
+  }
+  

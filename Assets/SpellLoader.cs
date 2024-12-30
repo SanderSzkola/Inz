@@ -6,13 +6,12 @@ public static class SpellLoader
 {
     public static List<Spell> LoadSpells(string path)
     {
-        TextAsset jsonFile = Resources.Load<TextAsset>(path);
-        if (jsonFile == null)
+        string json = File.ReadAllText(path);
+        if (json == null)
         {
             Debug.LogError($"Spell JSON not found at {path}");
             return new List<Spell>();
         }
-        string json = jsonFile.text;
 
         List<SpellData> spellDataList = JsonUtility.FromJson<SpellDataList>($"{{\"spells\": {json}}}").spells;
         List<Spell> spells = new List<Spell>();

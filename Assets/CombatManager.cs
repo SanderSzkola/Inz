@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
@@ -9,15 +11,13 @@ public class CombatManager : MonoBehaviour
 {
     public TurnState turnState;
 
-    public int pcCount = 3; // temp for testing, should be read from combat params / num of PlayerCharacterCount
     public GameObject playerPrefab;
     public GameObject playerStatusPanel;
     public RectTransform playerPosition;
     private List<Unit> playerUnits = new List<Unit>();
 
-    public int enemyCount = 3; // temp for testing, should be read from combat params / num of enemies
     public GameObject enemyPrefab;
-    public GameObject enemyStatusPanel;
+    public GameObject enemyStatusPanel; // why do i have separate status panel for enemy?? no time to check
     public RectTransform enemyPosition;
     private List<Unit> enemyUnits = new List<Unit>();
 
@@ -32,29 +32,83 @@ public class CombatManager : MonoBehaviour
     public SpellPanel spellPanel;
     private List<Spell> spells; // list of all spells, maybe move out?
 
+    private Dictionary<string, UnitData> enemyDefs;
+    private List<string> levelDefs;
+    [Range(0, 2)] public int currentLevel = 0;
+
+    private string playerSaveFile = "SaveData/playerUnits.json";
+    private string enemyDefsFile = "Defs/enemyDefs.json";
+    private string levelDefsFile = "Defs/levelDefs.json";
+    private string spellDefsFile = "Defs/spellDefs.json";
 
     void Start()
     {
         turnState = TurnState.INIT;
-        spells = SpellLoader.LoadSpells("Spells/spells"); // temp for tests, each unit should load their own spells
+        spells = SpellLoader.LoadSpells(spellDefsFile); // temp for tests, each unit should load their own spells
 
-        SpawnUnits(
-            count: pcCount,
-            unitPrefab: playerPrefab,
-            statusPanelPrefab: playerStatusPanel,
-            position: playerPosition,
-            unitList: playerUnits,
-            direction: new Vector2(1, 1) // NE direction
-        );
+        // Load player units from save file
+        string json = File.ReadAllText(playerSaveFile);
+        UnitDataList unitDataList = JsonUtility.FromJson<UnitDataList>("{\"units\":" + json + "}");
+        List<UnitData> playerData = new List<UnitData>(unitDataList.units);
 
-        SpawnUnits(
-            count: enemyCount,
-            unitPrefab: enemyPrefab,
-            statusPanelPrefab: enemyStatusPanel,
-            position: enemyPosition,
-            unitList: enemyUnits,
-            direction: new Vector2(-1, 1) // NW direction
-        );
+        for (int i = 0; i < playerData.Count; i++)
+        {
+            SpawnUnit(
+                unitPrefab: playerPrefab,
+                statusPanelPrefab: playerStatusPanel,
+                position: playerPosition,
+                direction: new Vector2(1, 1), // NE direction
+                unitList: playerUnits,
+                count: playerData.Count,
+                positionNum: i,
+                unitData: playerData[i]
+            );
+        }
+
+        // Load enemy defs
+        json = File.ReadAllText(enemyDefsFile);
+        EnemyDefsWrapper enemyDefsWrapper = JsonUtility.FromJson<EnemyDefsWrapper>(json);
+        enemyDefs = new Dictionary<string, UnitData>();
+        foreach (var enemyDef in enemyDefsWrapper.enemyDefs)
+        {
+            enemyDefs.Add(enemyDef.key, enemyDef.unitData);
+        }
+
+        // Load level defs
+        json = File.ReadAllText(levelDefsFile);
+        LevelDefsList levelDefsList = JsonUtility.FromJson<LevelDefsList>("{\"levelDefs\":" + json + "}");
+        levelDefs = new List<string>(levelDefsList.levelDefs);
+
+        // Prepare enemy data for the current level
+        List<UnitData> enemyData = new List<UnitData>();
+        string currentLevelConfig = levelDefs[currentLevel];
+
+        foreach (string enemyType in currentLevelConfig.Split(','))
+        {
+            string trimmedType = enemyType.Trim();
+            if (enemyDefs.TryGetValue(trimmedType, out UnitData enemyUnitData))
+            {
+                enemyData.Add(enemyUnitData);
+            }
+            else
+            {
+                Debug.LogError($"Enemy type '{trimmedType}' not in enemyDefs");
+            }
+        }
+
+        for (int i = 0; i < enemyData.Count; i++)
+        {
+            SpawnUnit(
+                unitPrefab: enemyPrefab,
+                statusPanelPrefab: enemyStatusPanel,
+                position: enemyPosition,
+                direction: new Vector2(-1, 1), // NW direction
+                unitList: enemyUnits,
+                count: enemyData.Count,
+                positionNum: i,
+                unitData: enemyData[i]
+            );
+        }
 
         turnState = TurnState.PLAYER;
 
@@ -66,39 +120,36 @@ public class CombatManager : MonoBehaviour
     }
 
 
-    private void SpawnUnits(int count, GameObject unitPrefab, GameObject statusPanelPrefab, Transform position, List<Unit> unitList, Vector2 direction)
+    private void SpawnUnit(GameObject unitPrefab, GameObject statusPanelPrefab, Transform position, List<Unit> unitList, Vector2 direction, int count, int positionNum, UnitData unitData)
     {
         // Space units evenly based on count and direction
         float maxYDistance = 25f;
-        float yInterval = maxYDistance / (count - 1);
+        float yInterval = (count > 1) ? maxYDistance / (count - 1) : 0;
         float xOffsetPerUnit = 14f;
 
-        for (int i = 0; i < count; i++)
-        {
-            float yPosition = position.position.y + i * yInterval * direction.y;
-            float xPosition = position.position.x + i * xOffsetPerUnit * direction.x;
-            Vector3 spawnPosition = new Vector3(xPosition, yPosition, 0);
+        float yPosition = position.position.y + positionNum * yInterval * direction.y;
+        float xPosition = position.position.x + positionNum * xOffsetPerUnit * direction.x;
+        Vector3 spawnPosition = new Vector3(xPosition, yPosition, 0);
 
-            // Instantiate the unit
-            GameObject unitGameObject = Instantiate(unitPrefab, position);
-            Unit unit = unitGameObject.GetComponent<Unit>();
-            GameObject selectionIndicator = Instantiate(selectionIndicatorPrefab, position);
+        // Instantiate the unit
+        GameObject unitGameObject = Instantiate(unitPrefab, position);
+        Unit unit = unitGameObject.GetComponent<Unit>();
+        GameObject selectionIndicator = Instantiate(selectionIndicatorPrefab, position);
 
-            unit.InitializeFromPrefab(this, spells, selectionIndicator, null); // ADD UNIT DATA WHERE NULL
-            unit.transform.position = spawnPosition;
+        unit.InitializeFromPrefab(this, spells, selectionIndicator, unitData);
+        unit.transform.position = spawnPosition;
 
-            // Instantiate the status panel below the unit
-            GameObject statusPanelGO = Instantiate(statusPanelPrefab, position);
-            statusPanelGO.transform.position = new Vector3(xPosition, yPosition - statusPanelOffset, 0);
+        // Instantiate the status panel below the unit
+        GameObject statusPanelGO = Instantiate(statusPanelPrefab, position);
+        statusPanelGO.transform.position = new Vector3(xPosition, yPosition - statusPanelOffset, 0);
 
-            unit.statusPanel = statusPanelGO;
-            unit.UpdateStatusPanel();
+        unit.statusPanel = statusPanelGO;
+        unit.UpdateStatusPanel();
 
-            selectionIndicator.transform.position = new Vector3(xPosition, yPosition - selectionIndicatorOffset, 0);
+        selectionIndicator.transform.position = new Vector3(xPosition, yPosition - selectionIndicatorOffset, 0);
 
-            // Add unit to the corresponding list
-            unitList.Add(unit);
-        }
+        // Add unit to the corresponding list
+        unitList.Add(unit);
     }
 
     public void SelectUnit(Unit unit)

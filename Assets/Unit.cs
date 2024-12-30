@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR;
@@ -19,11 +20,8 @@ public class Unit : MonoBehaviour
     public int mDef;
     public List<Spell> AvailableSpells = new List<Spell>();
 
-    public Dictionary<Element, int> Resistances = new Dictionary<Element, int>
-    {
-        { Element.Fire, 0 },
-        { Element.Ice, 0 },
-    };
+    public int fireRes;
+    public int iceRes;
 
     public GameObject statusPanel;
     private GameObject selectionIndicator;
@@ -33,20 +31,25 @@ public class Unit : MonoBehaviour
     private CombatManager combatManager;
 
     private SpriteRenderer maskSpriteRenderer;
-    [Range(0f, 1f)] private float maskRed = 1f;
-    [Range(0f, 1f)] private float maskGreen = 1f;
-    [Range(0f, 1f)] private float maskBlue = 1f;
+    private float maskRed = 1f;
+    private float maskGreen = 1f;
+    private float maskBlue = 1f;
 
-public void InitializeFromPrefab(CombatManager manager, List<Spell> spells, GameObject selectionIndicator, UnitData data)
+    public void InitializeFromPrefab(CombatManager manager, List<Spell> spells, GameObject selectionIndicator, UnitData data)
     {
         combatManager = manager;
         AvailableSpells = spells;
         InitializeFromData(data);
+        if (!isPlayerUnit)
+        {
+            // TODO: enemies have different sizes, prefab only fits for wolf, need to read and fix parameters in unity components
+        }
 
         this.selectionIndicator = selectionIndicator;
         this.selectionIndicator.SetActive(false);
         RefreshSelectorColor();
 
+        // only for player unit
         Transform maskTransform = transform.Find("mage/mask");
         if (maskTransform != null)
         {
@@ -71,16 +74,22 @@ public void InitializeFromPrefab(CombatManager manager, List<Spell> spells, Game
         pDef = data.PDef;
         mAtk = data.MAtk;
         mDef = data.MDef;
-        Resistances = data.Resistances;
+        fireRes = data.FireRes;
+        iceRes = data.IceRes;
+        maskRed = data.maskRed;
+        maskGreen = data.maskGreen;
+        maskBlue = data.maskBlue;
     }
 
     private void ApplyMask()
     {
         // Apply mask color based on the Unit parameters
-        // temp
-        maskRed = Random.Range(0f, 1f);
-        maskGreen = Random.Range(0f, 1f);
-        maskBlue = Random.Range(0f, 1f);
+        if (maskRed == 1f && maskGreen == 1f && maskBlue == 1f) // default detected, randomize
+        {
+            maskRed = Random.Range(0f, 1f);
+            maskGreen = Random.Range(0f, 1f);
+            maskBlue = Random.Range(0f, 1f);
+        }
         Color maskColor = new Color(maskRed, maskGreen, maskBlue, 1f);
         maskSpriteRenderer.color = maskColor;
     }
@@ -151,9 +160,11 @@ public void InitializeFromPrefab(CombatManager manager, List<Spell> spells, Game
         UpdateStatusPanel();
     }
 
-    public int GetResistance(Element element)
+    public int GetResistance(Element element) // where is my dict :(
     {
-        return Resistances.TryGetValue(element, out int resistance) ? resistance : 0;
+        if (element == Element.Fire) return fireRes;
+        if (element == Element.Ice) return iceRes;
+        return 0;
     }
 
     public bool CanAffordCast(int value)
@@ -203,7 +214,9 @@ public class UnitData
     public int PDef;
     public int MAtk;
     public int MDef;
-    public Vector2 Position;
-    public Dictionary<Element, int> Resistances;
-    public List<string> Spells;
+    public int FireRes;
+    public int IceRes;
+    public float maskRed;
+    public float maskGreen;
+    public float maskBlue;
 }

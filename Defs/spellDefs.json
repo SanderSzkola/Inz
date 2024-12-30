@@ -10,18 +10,18 @@
     },
     {
         "name": "Fireball2",
-        "power": 50,
-        "mpCost": 30,
-        "cooldown": 3,
+        "power": 120,
+        "mpCost": 70,
+        "cooldown": 4,
         "targetingMode": "Enemy",
         "element": "Fire",
         "graphicPath": "Spells/Fireball2"
     },
     {
         "name": "Fireball3",
-        "power": 50,
-        "mpCost": 30,
-        "cooldown": 3,
+        "power": 200,
+        "mpCost": 100,
+        "cooldown": 5,
         "targetingMode": "Enemy",
         "element": "Fire",
         "graphicPath": "Spells/Fireball3"
