@@ -135,24 +135,6 @@ public class Unit : MonoBehaviour
         }
     }
 
-    public void CastSpell(Spell spell, Unit target)
-    {
-        if (spell.IsOnCooldown())
-        {
-            Debug.Log($"{spell.Name} is on cooldown!");
-            return;
-        }
-
-        if (!CanAffordCast(spell.MPCost))
-        {
-            Debug.Log("Not enough MP!");
-            return;
-        }
-
-        ChangeMPBy(-spell.MPCost);
-        spell.Execute(this, target);
-    }
-
     public void UpdateStatusPanel()
     {
         if (!hpSlider)
@@ -193,12 +175,22 @@ public class Unit : MonoBehaviour
     public void ApplyDamage(int damage)
     {
         ChangeHPBy(-damage);
+
         if (currHP <= 0)
         {
             canAct = false;
-            Debug.Log($"{unitName} has been defeated!");
+            Die();
         }
     }
+
+    private void Die()
+    {
+        combatManager.RemoveUnit(this);
+        Destroy(selectionIndicator);
+        Destroy(statusPanel);
+        Destroy(gameObject);
+    }
+
     void OnMouseDown()
     {
         combatManager.SelectUnit(this);

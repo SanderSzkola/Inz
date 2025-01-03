@@ -51,6 +51,6 @@
         "cooldown": 2,
         "targetingMode": "Ally",
         "element": "None",
-        "graphicPath": "Spells/Heal"
+        "graphicPath": "Spells/IceComet"
     }
 ]

@@ -1,5 +1,6 @@
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using System;
 
 public enum Element
 {
@@ -48,13 +49,20 @@ public abstract class Spell
 
     public void ReduceCooldown() => remainingCooldown = Mathf.Max(remainingCooldown - 1, 0);
 
-    public abstract void Execute(Unit caster, Unit target);
+    public abstract void Execute(Unit caster, Unit target, MessageLog messageLog);
 
     public bool IsOnCooldown() => remainingCooldown > 0;
 
     public Spell Clone()
     {
         return (Spell)this.MemberwiseClone();
+    }
+
+    protected string getUnitColoring(Unit unit)
+    {
+        if (unit == null) return "<color=white>";
+        if (unit.isPlayerUnit) return "<color=green>";
+        else return "<color=red>";
     }
 }
 
@@ -66,9 +74,19 @@ public class AttackSpell : Spell
         // If attackSpell had something unique that is not in baseSpell it would be here, todo?
     }
 
-    public override void Execute(Unit caster, Unit target)
+    public override void Execute(Unit caster, Unit target, MessageLog messageLog)
     {
         if (!IsReady()) return;
+
+        if (!caster.CanAffordCast(MPCost))
+        {
+            if (caster.isPlayerUnit)
+            {
+                messageLog.AddTemporaryMessage($"<color=blue>Not enough MP to cast {Name}.</color>");
+            }
+            return;
+        }
+
         caster.ChangeMPBy(MPCost * -1);
         int baseDamage = Element == Element.None ? caster.pAtk : caster.mAtk;
         int targetDefense = Element == Element.None ? target.pDef : target.mDef;
@@ -76,8 +94,8 @@ public class AttackSpell : Spell
 
         int damage = Mathf.Max((Power + baseDamage - targetDefense) - resistance, 0);
 
+        messageLog.AddMessage($"{getUnitColoring(caster)}{caster.unitName}</color> cast {Name} on {getUnitColoring(target)}{target.unitName}</color> for <color=red>{damage}</color> damage.");
         target.ApplyDamage(damage);
-        Debug.Log($"{caster.unitName} cast {Name} on {target.unitName} for {damage} damage");
 
         StartCooldown();
         caster.canAct = false;

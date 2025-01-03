@@ -32,6 +32,8 @@ public class CombatManager : MonoBehaviour
     public SpellPanel spellPanel;
     private List<Spell> spells; // list of all spells, maybe move out?
 
+    private MessageLog messageLog;
+
     private Dictionary<string, UnitData> enemyDefs;
     private List<string> levelDefs;
     [Range(0, 2)] public int currentLevel = 0;
@@ -45,6 +47,7 @@ public class CombatManager : MonoBehaviour
     {
         turnState = TurnState.INIT;
         spells = SpellLoader.LoadSpells(spellDefsFile);
+        messageLog = FindAnyObjectByType<MessageLog>();
 
         // Load player units from save file
         string json = File.ReadAllText(playerSaveFile);
@@ -185,7 +188,7 @@ public class CombatManager : MonoBehaviour
         if (targetUnit != null)
         {
             // try casting spell
-            Debug.Log("Active unit: " + activePlayerUnit.unitName + ", target unit: " + targetUnit.unitName + ", selected spell: " + selectedSpell.Name);
+            // Debug.Log("Active unit: " + activePlayerUnit.unitName + ", target unit: " + targetUnit.unitName + ", selected spell: " + selectedSpell.Name);
             CastSpell(selectedSpell);
 
             spellPanel.RefreshSpellSelection(null, activePlayerUnit.canAct);
@@ -216,16 +219,7 @@ public class CombatManager : MonoBehaviour
     private void CastSpell(Spell spell)
     {
         if (turnState != TurnState.PLAYER || activePlayerUnit == null || !activePlayerUnit.canAct || targetUnit == null) return;
-
-        if (activePlayerUnit.CanAffordCast(spell.MPCost))
-        {
-            spell.Execute(activePlayerUnit, targetUnit);
-        }
-        else
-        {
-            Debug.Log("Not enough MP to cast the spell!");
-            // maybe set spells to be unclickabe?
-        }
+        spell.Execute(activePlayerUnit, targetUnit, messageLog); // checking if spell can be cast moved to spell class
     }
 
     private void RefreshUnitSelections()
@@ -235,5 +229,35 @@ public class CombatManager : MonoBehaviour
         foreach (Unit unit in enemyUnits)
             unit.RefreshSelection(activePlayerUnit, targetUnit);
         spellPanel.RefreshSpellSelection(null, activePlayerUnit.canAct);
+    }
+
+    public void RemoveUnit(Unit unit)
+    {
+        if (playerUnits.Contains(unit))
+        {
+            playerUnits.Remove(unit);
+            messageLog.AddMessage($"<color=yellow>{unit.name} has fainted.</color>");
+        }
+        else if (enemyUnits.Contains(unit))
+        {
+            enemyUnits.Remove(unit);
+            messageLog.AddMessage($"<color=yellow>{unit.name} has been defeated.</color>");
+        }
+
+        CheckBattleEndConditions();
+    }
+
+    private void CheckBattleEndConditions()
+    {
+        if (playerUnits.Count == 0)
+        {
+            Debug.Log("All player units have been defeated. Game Over!");
+            // Trigger defeat logic
+        }
+        else if (enemyUnits.Count == 0)
+        {
+            Debug.Log("All enemies have been defeated. Victory!");
+            // Trigger victory logic
+        }
     }
 }
