@@ -284,7 +284,6 @@ public class CombatManager : MonoBehaviour
     private void HandleEnemyTurn()
     {
         if (turnState != TurnState.ENEMY) return;
-        Debug.Log("Starting enemy turn");
         turnState = TurnState.ENEMYPROCESSING;
         foreach (Unit enemy in enemyUnits)
         {

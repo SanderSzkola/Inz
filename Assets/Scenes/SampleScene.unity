@@ -575,7 +575,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   logText: {fileID: 1299551040}
-  maxMessages: 6
+  maxMessages: 7
   tempMessageDuration: 2
 --- !u!1 &1299551038
 GameObject:

@@ -55,6 +55,15 @@
             "graphicPath": "Spells/IceComet"
         },
         {
+            "name": "Recharge",
+            "power": 60,
+            "mpCost": 0,
+            "cooldown": 1,
+            "targetingMode": "Self",
+            "element": "None",
+            "graphicPath": "Spells/Recharge"
+        },
+        {
             "name": "Bite",
             "power": 20,
             "mpCost": 0,

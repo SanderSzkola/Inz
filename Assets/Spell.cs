@@ -101,3 +101,23 @@ public class AttackSpell : Spell
         caster.canAct = false;
     }
 }
+
+public class RestoreSpell : Spell
+{
+    public RestoreSpell(string name, int power, int mpCost, int cooldown, TargetingMode targetingMode, Element element, Sprite graphic)
+        : base(name, power, mpCost, cooldown, targetingMode, element, graphic)
+    {
+        // If attackSpell had something unique that is not in baseSpell it would be here, todo?
+    }
+
+    public override void Execute(Unit caster, Unit target, MessageLog messageLog)
+    {
+        if (!IsReady()) return;
+
+        messageLog.AddMessage($"{getUnitColoring(caster)}{caster.unitName}</color> restored <color=blue>{Power}</color> MP.");
+        caster.ChangeMPBy(Power);
+
+        StartCooldown();
+        caster.canAct = false;
+    }
+}
