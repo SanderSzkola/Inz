@@ -187,7 +187,7 @@ public class Unit : MonoBehaviour
         }
     }
 
-    private void Die()
+    private void Die() // TODO: add logic to revieve player units?
     {
         combatManager.RemoveUnit(this);
         Destroy(selectionIndicator);
@@ -211,6 +211,16 @@ public class Unit : MonoBehaviour
             selectionIndicator.SetActive(targetUnit != null && targetUnit == this);
         }
         RefreshSelectorColor();
+    }
+
+    public void ProcessNextTurn()
+    {
+        canAct = true;
+        foreach (Spell spell in AvailableSpells)
+        {
+            spell.ReduceCooldown();
+        }
+        ChangeHPBy(mpRegen);
     }
 }
 

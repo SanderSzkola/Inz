@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
 
-public enum TurnState { INIT, PLAYER, ENEMY, RESULT }
+public enum TurnState { INIT, PLAYER, ENEMY, ENEMYPROCESSING, RESULT }
 
 public class CombatManager : MonoBehaviour
 {
@@ -122,6 +122,13 @@ public class CombatManager : MonoBehaviour
         RefreshUnitSelections();
     }
 
+    private void Update()
+    {
+        if (turnState == TurnState.ENEMY)
+        {
+            HandleEnemyTurn();
+        }
+    }
 
     private void SpawnUnit(GameObject unitPrefab, GameObject statusPanelPrefab, Transform position, List<Unit> unitList, Vector2 direction, int count, int positionNum, UnitData unitData)
     {
@@ -273,4 +280,71 @@ public class CombatManager : MonoBehaviour
             // Trigger victory logic
         }
     }
+
+    private void HandleEnemyTurn()
+    {
+        if (turnState != TurnState.ENEMY) return;
+        Debug.Log("Starting enemy turn");
+        turnState = TurnState.ENEMYPROCESSING;
+        foreach (Unit enemy in enemyUnits)
+        {
+            enemy.ProcessNextTurn();
+        }
+
+        // maybe some additional logic here?
+
+        foreach (Unit enemy in enemyUnits)
+        {
+            if (!enemy.canAct) continue;
+            Spell chosenSpell = ChooseSpellForEnemy(enemy);
+            Unit target = ChooseRandomTarget(playerUnits);
+
+            if (chosenSpell != null && target != null)
+            {
+                chosenSpell.Execute(enemy, target, messageLog);
+            }
+            RefreshUnitSelections();
+            CheckBattleEndConditions();
+            if (playerUnits.Count == 0 || enemyUnits.Count == 0)
+            {
+                return;
+            }
+        }
+        StartPlayerTurn();
+    }
+
+    private Spell ChooseSpellForEnemy(Unit enemy)
+    {
+        List<Spell> availableSpells = enemy.AvailableSpells;
+        Spell randomSpell = availableSpells[UnityEngine.Random.Range(0, availableSpells.Count)];
+        if (randomSpell.IsReady() && enemy.CanAffordCast(randomSpell.MPCost))
+        {
+            return randomSpell;
+        }
+        foreach (Spell spell in availableSpells)
+        {
+            if (spell.IsReady() && enemy.CanAffordCast(spell.MPCost))
+            {
+                return spell;
+            }
+        }
+        Debug.LogWarning($"Enemy {enemy.unitName} ran out of castable spells.");
+        return null;
+    }
+    private Unit ChooseRandomTarget(List<Unit> targets)
+    {
+        if (targets.Count == 0) return null;
+        return targets[UnityEngine.Random.Range(0, targets.Count)];
+    }
+
+    private void StartPlayerTurn()
+    {
+        foreach (Unit unit in playerUnits)
+        {
+            unit.ProcessNextTurn();
+        }
+        turnState = TurnState.PLAYER;
+        RefreshUnitSelections();
+    }
+
 }
