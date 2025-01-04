@@ -81,7 +81,11 @@ public class Unit : MonoBehaviour
         maskBlue = data.maskBlue;
 
         AvailableSpells.Clear();
-        if (data.SpellNames == null) return; // TODO each enemy should have at least one'spell' attack 
+        if (data.SpellNames == null)
+        {
+            Debug.LogError($"Unit '{unitName}' has no spells.");
+            return;
+        }
         string[] spellNames = data.SpellNames.Split(',');
         foreach (string spellName in spellNames)
         {

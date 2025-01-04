@@ -7,7 +7,7 @@ public class LevelDefsList
 [System.Serializable]
 public class UnitDataList
 {
-    public UnitData[] units;
+    public UnitData[] playerUnits;
 }
 
 [System.Serializable]

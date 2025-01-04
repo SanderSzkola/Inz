@@ -13,7 +13,7 @@ public static class SpellLoader
             return new List<Spell>();
         }
 
-        List<SpellData> spellDataList = JsonUtility.FromJson<SpellDataList>($"{{\"spells\": {json}}}").spells;
+        List<SpellData> spellDataList = JsonUtility.FromJson<SpellDataList>(json).spells;
         List<Spell> spells = new List<Spell>();
 
         foreach (SpellData data in spellDataList)

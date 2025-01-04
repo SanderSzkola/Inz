@@ -1,6 +1,8 @@
-[
-    "Wolf",
-    "Wolf,Wolf,Wolf",
-    "Wolf,Bear,Wolf",
-    "Bear,Bear,Bear"
-]
+{
+    "levelDefs": [
+        "Wolf",
+        "Wolf,Wolf,Wolf",
+        "Wolf,Bear",
+        "Bear,Bear,Bear"
+    ]
+}

@@ -27,7 +27,7 @@ public class CombatManager : MonoBehaviour
 
     private Unit activePlayerUnit = null; // does action
     private Unit targetUnit = null; // target of action
-    private Spell selectedSpell = null;
+    private Spell selectedSpell = null; // spell to execute
 
     public SpellPanel spellPanel;
     private List<Spell> spells; // list of all spells, maybe move out?
@@ -51,8 +51,8 @@ public class CombatManager : MonoBehaviour
 
         // Load player units from save file
         string json = File.ReadAllText(playerSaveFile);
-        UnitDataList unitDataList = JsonUtility.FromJson<UnitDataList>("{\"units\":" + json + "}");
-        List<UnitData> playerData = new List<UnitData>(unitDataList.units);
+        UnitDataList unitDataList = JsonUtility.FromJson<UnitDataList>(json);
+        List<UnitData> playerData = new List<UnitData>(unitDataList.playerUnits);
 
         for (int i = 0; i < playerData.Count; i++)
         {
@@ -79,7 +79,7 @@ public class CombatManager : MonoBehaviour
 
         // Load level defs
         json = File.ReadAllText(levelDefsFile);
-        LevelDefsList levelDefsList = JsonUtility.FromJson<LevelDefsList>("{\"levelDefs\":" + json + "}");
+        LevelDefsList levelDefsList = JsonUtility.FromJson<LevelDefsList>(json);
         levelDefs = new List<string>(levelDefsList.levelDefs);
 
         // Prepare enemy data for the current level
@@ -229,22 +229,35 @@ public class CombatManager : MonoBehaviour
         foreach (Unit unit in enemyUnits)
             unit.RefreshSelection(activePlayerUnit, targetUnit);
         spellPanel.RefreshSpellSelection(null, activePlayerUnit.canAct);
+        turnState = CheckTurnProgress();
     }
 
     public void RemoveUnit(Unit unit)
     {
         if (playerUnits.Contains(unit))
         {
+            messageLog.AddMessage($"<color=yellow>{unit.unitName} has fainted.</color>");
             playerUnits.Remove(unit);
-            messageLog.AddMessage($"<color=yellow>{unit.name} has fainted.</color>");
         }
         else if (enemyUnits.Contains(unit))
         {
+            messageLog.AddMessage($"<color=yellow>{unit.unitName} has been defeated.</color>");
             enemyUnits.Remove(unit);
-            messageLog.AddMessage($"<color=yellow>{unit.name} has been defeated.</color>");
         }
 
         CheckBattleEndConditions();
+    }
+
+    private TurnState CheckTurnProgress()
+    {
+        foreach (Unit unit in playerUnits)
+        {
+            if (unit.canAct)
+            {
+                return TurnState.PLAYER;
+            }
+        }
+        return TurnState.ENEMY;
     }
 
     private void CheckBattleEndConditions()
