@@ -36,7 +36,7 @@ public class CombatManager : MonoBehaviour
 
     private Dictionary<string, UnitData> enemyDefs;
     private List<string> levelDefs;
-    [Range(0, 2)] public int currentLevel = 0;
+    [Range(0, 3)] public int currentLevel = 0;
 
     private string playerSaveFile = "SaveData/playerUnits.json";
     private string enemyDefsFile = "Defs/enemyDefs.json";
@@ -124,7 +124,7 @@ public class CombatManager : MonoBehaviour
 
     private void Update()
     {
-        if (turnState == TurnState.ENEMY)
+        if (turnState == TurnState.ENEMY) // yes, it triggers exactly once and when needed, already checked that
         {
             HandleEnemyTurn();
         }
@@ -135,7 +135,7 @@ public class CombatManager : MonoBehaviour
         // Space units evenly based on count and direction
         float maxYDistance = 25f;
         float yInterval = (count > 1) ? maxYDistance / (count - 1) : 0;
-        float xOffsetPerUnit = 14f;
+        float xOffsetPerUnit = 18f;
 
         float yPosition = position.position.y + positionNum * yInterval * direction.y;
         float xPosition = position.position.x + positionNum * xOffsetPerUnit * direction.x;
@@ -148,6 +148,42 @@ public class CombatManager : MonoBehaviour
 
         unit.InitializeFromPrefab(this, spells, selectionIndicator, unitData);
         unit.transform.position = spawnPosition;
+
+        // Graphic nonsense, Only Enemies edition
+        // TODO: make hp panels dynamic and move them on top (+1000 drawing order) when unit is acting or taking damage
+        Transform spriteTransform = unitGameObject.transform.Find("Sprite");
+        if (spriteTransform != null)
+        {
+            SpriteRenderer spriteRenderer = spriteTransform.GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.sortingOrder = 100 - 1 * positionNum;
+                string spritePath = $"Sprites/{unitData.Name}";
+                Sprite sprite = Resources.Load<Sprite>(spritePath);
+                if (sprite != null)
+                {
+                    spriteRenderer.sprite = sprite;
+                }
+                else
+                {
+                    Debug.LogError($"Sprite not found at path: {spritePath}");
+                }
+            }
+
+            BoxCollider2D collider = unitGameObject.GetComponent<BoxCollider2D>();
+            if (collider != null)
+            {
+                collider.offset = new Vector2(unitData.ColliderOffsetX, unitData.ColliderOffsetY);
+                collider.size = new Vector2(unitData.ColliderSizeX, unitData.ColliderSizeY);
+            }
+
+            RectTransform spriteRect = spriteTransform.GetComponent<RectTransform>();
+            if (spriteRect != null)
+            {
+                spriteRect.localPosition = new Vector3(unitData.SpritePosX, unitData.SpritePosY, unitData.SpritePosZ);
+                spriteRect.sizeDelta = new Vector2(unitData.SpriteWidth, unitData.SpriteHeight);
+            }
+        }
 
         // Instantiate the status panel below the unit
         GameObject statusPanelGO = Instantiate(statusPanelPrefab, position);

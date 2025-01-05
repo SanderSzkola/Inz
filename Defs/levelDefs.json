@@ -2,7 +2,7 @@
     "levelDefs": [
         "Wolf",
         "Wolf,Wolf,Wolf",
-        "Wolf,Bear",
+        "Wolf,Bear,Wolf",
         "Bear,Bear,Bear"
     ]
 }

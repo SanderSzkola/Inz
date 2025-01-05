@@ -15,7 +15,16 @@
               "MDef": 5,
               "SpellNames": "Bite,Pounce",
               "FireRes": -10,
-              "IceRes": 10
+              "IceRes": 10,
+              "ColliderOffsetX": 0,
+              "ColliderOffsetY": 1,
+              "ColliderSizeX": 2.5,
+              "ColliderSizeY": 2,
+              "SpritePosX": 0,
+              "SpritePosY": 1,
+              "SpritePosZ": 0,
+              "SpriteWidth": 1.37,
+              "SpriteHeight": 0.94
           }
       },
       {
@@ -33,7 +42,16 @@
               "MDef": 15,
               "SpellNames": "Bite,Scratch,Charge",
               "FireRes": 30,
-              "IceRes": 60
+              "IceRes": 60,
+              "ColliderOffsetX": 0,
+              "ColliderOffsetY": 1.6,
+              "ColliderSizeX": 5,
+              "ColliderSizeY": 3.2,
+              "SpritePosX": 0,
+              "SpritePosY": 1.6,
+              "SpritePosZ": 0,
+              "SpriteWidth": 2.55,
+              "SpriteHeight": 1.6
           }
       }
   ]

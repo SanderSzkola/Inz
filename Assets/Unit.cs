@@ -10,6 +10,7 @@ public class Unit : MonoBehaviour
     public string unitName;
     public bool canAct = true;
     public bool isPlayerUnit = false;
+
     public int maxHP;
     public int currHP;
     public int maxMP;
@@ -19,6 +20,7 @@ public class Unit : MonoBehaviour
     public int pDef;
     public int mAtk;
     public int mDef;
+
     public List<Spell> AvailableSpells = new List<Spell>();
 
     public int fireRes;
@@ -35,6 +37,17 @@ public class Unit : MonoBehaviour
     private float maskRed = 1f;
     private float maskGreen = 1f;
     private float maskBlue = 1f;
+
+    public float ColliderOffsetX;
+    public float ColliderOffsetY;
+    public float ColliderSizeX;
+    public float ColliderSizeY;
+
+    public float SpritePosX;
+    public float SpritePosY;
+    public float SpritePosZ;
+    public float SpriteWidth;
+    public float SpriteHeight;
 
     public void InitializeFromPrefab(CombatManager manager, List<Spell> globalSpellList, GameObject selectionIndicator, UnitData data)
     {
@@ -65,6 +78,7 @@ public class Unit : MonoBehaviour
     {
         unitName = data.Name;
         isPlayerUnit = data.IsPlayerUnit;
+
         maxHP = data.MaxHP;
         currHP = data.CurrHP;
         maxMP = data.MaxMP;
@@ -74,11 +88,23 @@ public class Unit : MonoBehaviour
         pDef = data.PDef;
         mAtk = data.MAtk;
         mDef = data.MDef;
+
         fireRes = data.FireRes;
         iceRes = data.IceRes;
+
         maskRed = data.maskRed;
         maskGreen = data.maskGreen;
         maskBlue = data.maskBlue;
+
+        ColliderOffsetX = data.ColliderOffsetX;
+        ColliderOffsetY = data.ColliderOffsetY;
+        ColliderSizeX = data.ColliderSizeX;
+        ColliderSizeY = data.ColliderSizeY;
+        SpritePosX = data.SpritePosX;
+        SpritePosY = data.SpritePosY;
+        SpritePosZ = data.SpritePosZ;
+        SpriteWidth = data.SpriteWidth;
+        SpriteHeight = data.SpriteHeight;
 
         AvailableSpells.Clear();
         if (data.SpellNames == null)
@@ -227,8 +253,10 @@ public class Unit : MonoBehaviour
 [System.Serializable]
 public class UnitData
 {
+    // Parameters
     public string Name;
     public bool IsPlayerUnit;
+
     public int MaxHP;
     public int CurrHP;
     public int MaxMP;
@@ -238,10 +266,24 @@ public class UnitData
     public int PDef;
     public int MAtk;
     public int MDef;
+
     public int FireRes;
     public int IceRes;
+
     public string SpellNames;
+
+    // Graphics
     public float maskRed;
     public float maskGreen;
     public float maskBlue;
+
+    public float ColliderOffsetX;
+    public float ColliderOffsetY;
+    public float ColliderSizeX;
+    public float ColliderSizeY;
+    public float SpritePosX;
+    public float SpritePosY;
+    public float SpritePosZ;
+    public float SpriteWidth;
+    public float SpriteHeight;
 }

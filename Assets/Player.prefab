@@ -239,6 +239,8 @@ MonoBehaviour:
   pDef: 20
   mAtk: 40
   mDef: 20
+  fireRes: 0
+  iceRes: 0
   statusPanel: {fileID: 0}
 --- !u!61 &47066664275897367
 BoxCollider2D:
