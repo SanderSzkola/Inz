@@ -49,7 +49,21 @@ public abstract class Spell
 
     public void ReduceCooldown() => remainingCooldown = Mathf.Max(remainingCooldown - 1, 0);
 
-    public abstract void Execute(Unit caster, Unit target, MessageLog messageLog);
+    public virtual void Execute(Unit caster, Unit target, MessageLog messageLog)
+    {
+        if (!IsReady()) return;
+
+        if (!caster.CanAffordCast(MPCost))
+        {
+            if (caster.isPlayerUnit)
+            {
+                messageLog.AddTemporaryMessage($"<color=blue>Not enough MP to cast {Name}.</color>");
+            }
+            return;
+        }
+
+        caster.ChangeMPBy(MPCost * -1);
+    }
 
     public bool IsOnCooldown() => remainingCooldown > 0;
 
@@ -71,23 +85,12 @@ public class AttackSpell : Spell
     public AttackSpell(string name, int power, int mpCost, int cooldown, TargetingMode targetingMode, Element element, Sprite graphic)
         : base(name, power, mpCost, cooldown, targetingMode, element, graphic)
     {
-        // If attackSpell had something unique that is not in baseSpell it would be here, todo?
+        // If VariantSpell had something unique that is not in baseSpell it would be here, todo?
     }
 
     public override void Execute(Unit caster, Unit target, MessageLog messageLog)
     {
-        if (!IsReady()) return;
-
-        if (!caster.CanAffordCast(MPCost))
-        {
-            if (caster.isPlayerUnit)
-            {
-                messageLog.AddTemporaryMessage($"<color=blue>Not enough MP to cast {Name}.</color>");
-            }
-            return;
-        }
-
-        caster.ChangeMPBy(MPCost * -1);
+        base.Execute(caster, target, messageLog);
         int baseDamage = Element == Element.None ? caster.pAtk : caster.mAtk;
         int targetDefense = Element == Element.None ? target.pDef : target.mDef;
         int resistance = target.GetResistance(Element);
@@ -107,13 +110,12 @@ public class RestoreSpell : Spell
     public RestoreSpell(string name, int power, int mpCost, int cooldown, TargetingMode targetingMode, Element element, Sprite graphic)
         : base(name, power, mpCost, cooldown, targetingMode, element, graphic)
     {
-        // If attackSpell had something unique that is not in baseSpell it would be here, todo?
+        // If VariantSpell had something unique that is not in baseSpell it would be here, todo?
     }
 
     public override void Execute(Unit caster, Unit target, MessageLog messageLog)
     {
-        if (!IsReady()) return;
-
+        base.Execute (caster, target, messageLog);
         messageLog.AddMessage($"{getUnitColoring(caster)}{caster.unitName}</color> restored <color=blue>{Power}</color> MP.");
         caster.ChangeMPBy(Power);
 
