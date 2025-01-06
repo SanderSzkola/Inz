@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -205,12 +206,7 @@ public class Unit : MonoBehaviour
     public void ApplyDamage(int damage)
     {
         ChangeHPBy(-damage);
-
-        if (currHP <= 0)
-        {
-            canAct = false;
-            Die();
-        }
+        StartCoroutine(TakeDamageAnim());
     }
 
     private void Die() // TODO: add logic to revieve player units?
@@ -248,42 +244,51 @@ public class Unit : MonoBehaviour
         }
         ChangeHPBy(mpRegen);
     }
-}
 
-[System.Serializable]
-public class UnitData
-{
-    // Parameters
-    public string Name;
-    public bool IsPlayerUnit;
+    public IEnumerator TakeDamageAnim(float duration = 0.3f, float intensity = 1f)
+    {
+        // Animation
+        float elapsedTime = 0f;
+        Vector3 originalPosition = transform.position;
 
-    public int MaxHP;
-    public int CurrHP;
-    public int MaxMP;
-    public int CurrMP;
-    public int MPRegen;
-    public int PAtk;
-    public int PDef;
-    public int MAtk;
-    public int MDef;
+        while (elapsedTime < duration)
+        {
+            float offsetX = Mathf.Sin(Time.time * 50f) * intensity * (duration - elapsedTime) / duration;
+            transform.position = originalPosition + new Vector3(offsetX, 0, 0);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
 
-    public int FireRes;
-    public int IceRes;
+        transform.position = originalPosition;
 
-    public string SpellNames;
+        // Logic that needs to happen AFTER animation or it errors
+        if (currHP <= 0)
+        {
+            canAct = false;
+            Die();
+        }
+    }
 
-    // Graphics
-    public float maskRed;
-    public float maskGreen;
-    public float maskBlue;
+    public IEnumerator TakeActionAnim()
+    {
+        int direction = isPlayerUnit ? 1 : -1;
+        float moveSpeed = 15f;
+        Vector3 startPosition = transform.position;
+        Vector3 actionPosition = transform.position + new Vector3(1 * direction, 0, 0);
 
-    public float ColliderOffsetX;
-    public float ColliderOffsetY;
-    public float ColliderSizeX;
-    public float ColliderSizeY;
-    public float SpritePosX;
-    public float SpritePosY;
-    public float SpritePosZ;
-    public float SpriteWidth;
-    public float SpriteHeight;
+        // Move to action position
+        while (Vector3.Distance(transform.position, actionPosition) > 0.1f)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, actionPosition, moveSpeed * Time.deltaTime);
+            yield return null;
+        }
+
+        // Move back to start position
+        while (Vector3.Distance(transform.position, startPosition) > 0.1f)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, startPosition, moveSpeed * 0.5f * Time.deltaTime);
+            yield return null;
+        }
+    }
+
 }

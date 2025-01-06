@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections;
 using System.IO;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -128,7 +129,7 @@ public class CombatManager : MonoBehaviour
     {
         if (turnState == TurnState.ENEMY) // yes, it triggers exactly once and when needed, already checked that
         {
-            HandleEnemyTurn();
+            StartCoroutine(HandleEnemyTurn());
         }
     }
 
@@ -264,6 +265,7 @@ public class CombatManager : MonoBehaviour
     private void CastSpell(Spell spell)
     {
         if (turnState != TurnState.PLAYER || activePlayerUnit == null || !activePlayerUnit.canAct || targetUnit == null) return;
+        StartCoroutine(activePlayerUnit.TakeActionAnim());
         spell.Execute(activePlayerUnit, targetUnit, messageLog); // checking if spell can be cast moved to spell class
     }
 
@@ -274,7 +276,10 @@ public class CombatManager : MonoBehaviour
         foreach (Unit unit in enemyUnits)
             unit.RefreshSelection(activePlayerUnit, targetUnit);
         spellPanel.RefreshSpellSelection(null, activePlayerUnit.canAct);
-        turnState = CheckTurnProgress();
+        if (turnState == TurnState.PLAYER)
+        {
+            turnState = CheckTurnProgress();
+        }
     }
 
     public void RemoveUnit(Unit unit)
@@ -319,9 +324,9 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    private void HandleEnemyTurn()
+    private IEnumerator HandleEnemyTurn()
     {
-        if (turnState != TurnState.ENEMY) return;
+        if (turnState != TurnState.ENEMY) yield break;
         turnState = TurnState.ENEMYPROCESSING;
         foreach (Unit enemy in enemyUnits)
         {
@@ -330,21 +335,25 @@ public class CombatManager : MonoBehaviour
 
         // maybe some additional logic here?
 
+        yield return new WaitForSeconds(0.7f);
         foreach (Unit enemy in enemyUnits)
         {
             if (!enemy.canAct) continue;
+
             Spell chosenSpell = ChooseSpellForEnemy(enemy);
             Unit target = ChooseRandomTarget(playerUnits);
 
             if (chosenSpell != null && target != null)
             {
+                StartCoroutine(enemy.TakeActionAnim());
                 chosenSpell.Execute(enemy, target, messageLog);
+                yield return new WaitForSeconds(0.5f);
             }
             RefreshUnitSelections();
             CheckBattleEndConditions();
             if (playerUnits.Count == 0 || enemyUnits.Count == 0)
             {
-                return;
+                yield break;
             }
         }
         StartPlayerTurn();

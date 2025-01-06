@@ -23,7 +23,7 @@
             "Name": "Selvara Moonglade",
             "IsPlayerUnit": true,
             "MaxHP": 500,
-            "CurrHP": 220,
+            "CurrHP": 10,
             "MaxMP": 200,
             "CurrMP": 70,
             "MPRegen": 10,
