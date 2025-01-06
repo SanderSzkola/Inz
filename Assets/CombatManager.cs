@@ -33,6 +33,7 @@ public class CombatManager : MonoBehaviour
     private List<Spell> spells; // list of all spells, maybe move out?
 
     private MessageLog messageLog;
+    private int turnNumber = 1;
 
     private Dictionary<string, UnitData> enemyDefs;
     private List<string> levelDefs;
@@ -120,6 +121,7 @@ public class CombatManager : MonoBehaviour
             activePlayerUnit = playerUnits[0];
         }
         RefreshUnitSelections();
+        messageLog.AddMessage($"Starting turn {turnNumber}.");
     }
 
     private void Update()
@@ -380,6 +382,7 @@ public class CombatManager : MonoBehaviour
         }
         turnState = TurnState.PLAYER;
         RefreshUnitSelections();
+        turnNumber += 1;
+        messageLog.AddMessage($"Starting turn {turnNumber}.");
     }
-
 }
