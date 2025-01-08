@@ -1,0 +1,62 @@
+{
+    "playerUnits": [
+        {
+            "Name": "Aldorin Starforge",
+            "IsPlayerUnit": true,
+            "MaxHP": 300,
+            "CurrHP": 300,
+            "MaxMP": 200,
+            "CurrMP": 200,
+            "MPRegen": 10,
+            "PAtk": 40,
+            "PDef": 20,
+            "MAtk": 30,
+            "MDef": 10,
+            "SpellNames": "Recharge,Fireball",
+            "FireRes": 0,
+            "IceRes": 0,
+            "maskRed": 1,
+            "maskGreen": 0.1,
+            "maskBlue": 0.5
+        },
+        {
+            "Name": "Selvara Moonglade",
+            "IsPlayerUnit": true,
+            "MaxHP": 300,
+            "CurrHP": 30,
+            "MaxMP": 200,
+            "CurrMP": 20,
+            "MPRegen": 10,
+            "PAtk": 40,
+            "PDef": 20,
+            "MAtk": 30,
+            "MDef": 10,
+            "SpellNames": "Recharge,Fireball",
+            "FireRes": 0,
+            "IceRes": 0,
+            "maskRed": 0.2,
+            "maskGreen": 0.6,
+            "maskBlue": 1
+        },
+        {
+            "Name": "Erynn Copperflame",
+            "IsPlayerUnit": true,
+            "MaxHP": 300,
+            "CurrHP": 300,
+            "MaxMP": 200,
+            "CurrMP": 200,
+            "MPRegen": 10,
+            "PAtk": 40,
+            "PDef": 20,
+            "MAtk": 30,
+            "MDef": 10,
+            "SpellNames": "Recharge,Fireball",
+            "FireRes": 0,
+            "IceRes": 0,
+            "maskRed": 0.9,
+            "maskGreen": 0.7,
+            "maskBlue": 0.2
+        }
+    ],
+    "NextLevelToLoad": 0
+}

@@ -1,4 +1,11 @@
 [System.Serializable]
+public class UnitDataList
+{
+    public UnitData[] playerUnits;
+    public int NextLevelToLoad;
+}
+
+[System.Serializable]
 public class UnitData
 {
     // Parameters
@@ -40,12 +47,6 @@ public class UnitData
 public class LevelDefsList
 {
     public string[] levelDefs;
-}
-
-[System.Serializable]
-public class UnitDataList
-{
-    public UnitData[] playerUnits;
 }
 
 [System.Serializable]

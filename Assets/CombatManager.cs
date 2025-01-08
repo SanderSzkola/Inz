@@ -40,7 +40,7 @@ public class CombatManager : MonoBehaviour
     private List<string> levelDefs;
     [Range(0, 3)] public int currentLevel = 0;
 
-    private string playerSaveFile = "SaveData/playerUnits.json";
+    private string playerSaveFile = "Defs/newGamePlayerUnits.json";
     private string enemyDefsFile = "Defs/enemyDefs.json";
     private string levelDefsFile = "Defs/levelDefs.json";
     private string spellDefsFile = "Defs/spellDefs.json";
@@ -52,6 +52,10 @@ public class CombatManager : MonoBehaviour
         messageLog = FindAnyObjectByType<MessageLog>();
 
         // Load player units from save file
+        if (SaveFileManager.Instance.SaveFilePath!= null)
+        {
+            playerSaveFile = SaveFileManager.Instance.SaveFilePath;
+        }
         string json = File.ReadAllText(playerSaveFile);
         UnitDataList unitDataList = JsonUtility.FromJson<UnitDataList>(json);
         List<UnitData> playerData = new List<UnitData>(unitDataList.playerUnits);
@@ -69,6 +73,8 @@ public class CombatManager : MonoBehaviour
                 unitData: playerData[i]
             );
         }
+
+        currentLevel = unitDataList.NextLevelToLoad;
 
         // Load enemy defs
         json = File.ReadAllText(enemyDefsFile);
