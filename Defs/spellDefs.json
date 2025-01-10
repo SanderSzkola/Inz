@@ -4,7 +4,7 @@
             "name": "Fireball",
             "power": 50,
             "mpCost": 30,
-            "cooldown": 3,
+            "cooldown": 2,
             "targetingMode": "Enemy",
             "element": "Fire",
             "graphicPath": "Spells/Fireball"

@@ -61,4 +61,10 @@ public class MessageLog : MonoBehaviour
         }
         logText.text = combinedLog;
     }
+
+    public void ClearMessages()
+    {
+        messages.Clear();
+        tempMessageTimer = 0f;
+    }
 }

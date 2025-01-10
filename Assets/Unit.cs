@@ -54,10 +54,6 @@ public class Unit : MonoBehaviour
     {
         combatManager = manager;
         InitializeFromData(data, globalSpellList);
-        if (!isPlayerUnit)
-        {
-            // TODO: enemies have different sizes, prefab only fits for wolf, need to read and fix parameters in unity components
-        }
 
         this.selectionIndicator = selectionIndicator;
         this.selectionIndicator.SetActive(false);
@@ -128,7 +124,6 @@ public class Unit : MonoBehaviour
             }
         }
     }
-
 
     private void ApplyMask()
     {

@@ -4,8 +4,8 @@
           "key": "Wolf",
           "unitData": {
               "Name": "Wolf",
-              "MaxHP": 200,
-              "CurrHP": 200,
+              "MaxHP": 150,
+              "CurrHP": 150,
               "MaxMP": 50,
               "CurrMP": 50,
               "MPRegen": 5,
