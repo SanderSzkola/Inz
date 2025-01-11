@@ -1,5 +1,7 @@
+using System.Collections.Generic;
+
 [System.Serializable]
-public class UnitDataList
+public class SaveFileData
 {
     public UnitData[] playerUnits;
     public int NextLevelToLoad;
@@ -50,7 +52,7 @@ public class LevelDefsList
 }
 
 [System.Serializable]
-public class EnemyDefsWrapper
+public class EnemyDefsList
 {
     public EnemyDef[] enemyDefs;
 }
@@ -60,4 +62,22 @@ public class EnemyDef
 {
     public string key;
     public UnitData unitData;
+}
+
+[System.Serializable]
+public class SpellData
+{
+    public string name;
+    public int power;
+    public int mpCost;
+    public int cooldown;
+    public string targetingMode;
+    public string element;
+    public string graphicPath;
+}
+
+[System.Serializable]
+public class SpellDataList
+{
+    public List<SpellData> spells;
 }

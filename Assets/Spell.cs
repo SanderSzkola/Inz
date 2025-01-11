@@ -115,7 +115,7 @@ public class RestoreSpell : Spell
 
     public override void Execute(Unit caster, Unit target, MessageLog messageLog)
     {
-        base.Execute (caster, target, messageLog);
+        base.Execute(caster, target, messageLog);
         messageLog.AddMessage($"{getUnitColoring(caster)}{caster.unitName}</color> restored <color=blue>{Power}</color> MP.");
         caster.ChangeMPBy(Power);
 

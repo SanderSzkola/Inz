@@ -34,11 +34,11 @@ public class SaveMenuButton : MonoBehaviour
 
     public void UpdateButtonState()
     {
-        saveExists = SaveFileManager.Instance.DoesSaveExist(SaveSlotNumber);
+        saveExists = FileOperationsManager.Instance.DoesSaveExist(SaveSlotNumber);
         if (saveExists)
         {
             saveText.text = $"Load {SaveSlotNumber}";
-            saveData.text = SaveFileManager.Instance.GetSaveDate(SaveSlotNumber);
+            saveData.text = FileOperationsManager.Instance.GetSaveDate(SaveSlotNumber);
             deleteButton.interactable = true;
             deleteButton.image.color = Color.white;
         }
@@ -55,11 +55,11 @@ public class SaveMenuButton : MonoBehaviour
     {
         if (saveExists)
         {
-            SaveFileManager.Instance.LoadGame(SaveSlotNumber);
+            FileOperationsManager.Instance.LoadGame(SaveSlotNumber);
         }
         else
         {
-            SaveFileManager.Instance.SetUpNewGame(SaveSlotNumber);
+            FileOperationsManager.Instance.SetUpNewGame(SaveSlotNumber);
         }
     }
 
@@ -67,8 +67,7 @@ public class SaveMenuButton : MonoBehaviour
     {
         if (awaitingConfirmation)
         {
-            // Delete the save and reset confirmation state
-            SaveFileManager.Instance.DeleteSave(SaveSlotNumber);
+            FileOperationsManager.Instance.DeleteSave(SaveSlotNumber);
             awaitingConfirmation = false;
             if (confirmationCoroutine != null)
             {
@@ -78,7 +77,6 @@ public class SaveMenuButton : MonoBehaviour
         }
         else
         {
-            // Show confirmation message and wait for second press
             awaitingConfirmation = true;
             string originalText = saveData.text;
             saveData.text = "Press again to delete";
@@ -92,7 +90,7 @@ public class SaveMenuButton : MonoBehaviour
         if (awaitingConfirmation)
         {
             awaitingConfirmation = false;
-            saveData.text = originalText; // Revert text to original
+            saveData.text = originalText;
         }
     }
 }

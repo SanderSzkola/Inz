@@ -26,78 +26,73 @@ public class CombatManager : MonoBehaviour
 
     public GameObject selectionIndicatorPrefab; // to pass on to each unit
     private readonly float statusPanelOffset = 0.5f; // for creating stPanel below unit, not on top
-    public float selectionIndicatorOffset = -3f;
+    private readonly float selectionIndicatorOffset = -3f;
 
     private Unit activePlayerUnit = null; // does action
     private Unit targetUnit = null; // target of action
     private Spell selectedSpell = null; // spell to execute
 
     public SpellPanel spellPanel;
-    private List<Spell> spells; // list of all spells, maybe move out?
+    private List<Spell> spells;
 
     private MessageLog messageLog;
     private int turnNumber = 1;
 
     private Dictionary<string, UnitData> enemyDefs;
     private List<string> levelDefs;
-    [Range(0, 3)] public int currentLevel = 0;
+    private int currentLevel = 0;
 
-    private string playerSaveFile = "Defs/newGamePlayerUnits.json";
-    private string enemyDefsFile = "Defs/enemyDefs.json";
-    private string levelDefsFile = "Defs/levelDefs.json";
-    private string spellDefsFile = "Defs/spellDefs.json";
-    private UnitDataList UnitDataFromFile;
+    private SaveFileData SaveFileData;
 
     void Start()
     {
         turnState = TurnState.INIT;
-        spells = SpellLoader.LoadSpells(spellDefsFile);
         messageLog = FindAnyObjectByType<MessageLog>();
 
-        // Load player units from save file
-        if (SaveFileManager.Instance != null && SaveFileManager.Instance.SaveFilePath != null)
-        {
-            playerSaveFile = SaveFileManager.Instance.SaveFilePath;
-        }
-        string json = File.ReadAllText(playerSaveFile);
-        UnitDataFromFile = JsonUtility.FromJson<UnitDataList>(json);
-        List<UnitData> playerData = new List<UnitData>(UnitDataFromFile.playerUnits);
+        spells = FileOperationsManager.Instance.LoadSpellDefs();
 
-        for (int i = 0; i < playerData.Count; i++)
+        // Load player units
+        SaveFileData = FileOperationsManager.Instance.LoadPlayerData();
+        List<UnitData> playerData = new List<UnitData>(SaveFileData.playerUnits);
+
+        foreach (var playerUnit in playerData)
         {
-            SpawnUnit(
-                unitPrefab: playerPrefab,
-                statusPanelPrefab: playerStatusPanel,
-                position: playerPosition,
-                direction: new Vector2(1, 1), // NE direction
-                unitList: playerUnits,
-                count: playerData.Count,
-                positionNum: i,
-                unitData: playerData[i]
-            );
+            SpawnUnit(playerPrefab, playerStatusPanel, playerPosition, playerUnits, new Vector2(1, 1), playerData.Count, playerData.IndexOf(playerUnit), playerUnit);
         }
 
-        currentLevel = UnitDataFromFile.NextLevelToLoad;
+        currentLevel = SaveFileData.NextLevelToLoad;
 
-        // Load enemy defs
-        json = File.ReadAllText(enemyDefsFile);
-        EnemyDefsWrapper enemyDefsWrapper = JsonUtility.FromJson<EnemyDefsWrapper>(json);
-        enemyDefs = new Dictionary<string, UnitData>();
-        foreach (var enemyDef in enemyDefsWrapper.enemyDefs)
+        // Load enemy and level definitions
+        enemyDefs = FileOperationsManager.Instance.LoadEnemyDefs();
+        levelDefs = FileOperationsManager.Instance.LoadLevelDefs();
+
+        // Prepare enemies for the current level
+        List<UnitData> enemyData = PrepareEnemiesForLevel(levelDefs[currentLevel]);
+
+        for (int i = 0; i < enemyData.Count; i++)
         {
-            enemyDefs.Add(enemyDef.key, enemyDef.unitData);
+            SpawnUnit(enemyPrefab, enemyStatusPanel, enemyPosition, enemyUnits, new Vector2(-1, 1), enemyData.Count, i, enemyData[i]);
         }
 
-        // Load level defs
-        json = File.ReadAllText(levelDefsFile);
-        LevelDefsList levelDefsList = JsonUtility.FromJson<LevelDefsList>(json);
-        levelDefs = new List<string>(levelDefsList.levelDefs);
+        turnState = TurnState.PLAYER;
+        activePlayerUnit = playerUnits.Count > 0 ? playerUnits[0] : null;
+        RefreshUnitSelections();
 
-        // Prepare enemy data for the current level
+        messageLog.AddMessage($"<color=red>DEBUG:</color>Loading level {currentLevel}");
+        messageLog.AddMessage($"Starting turn {turnNumber}.");
+    }
+
+    private void Update()
+    {
+        if (turnState == TurnState.ENEMY) // yes, it triggers exactly once and when needed, already checked that
+        {
+            StartCoroutine(HandleEnemyTurn());
+        }
+    }
+    private List<UnitData> PrepareEnemiesForLevel(string levelConfig)
+    {
         List<UnitData> enemyData = new List<UnitData>();
-        string currentLevelConfig = levelDefs[currentLevel];
-
-        foreach (string enemyType in currentLevelConfig.Split(','))
+        foreach (string enemyType in levelConfig.Split(','))
         {
             string trimmedType = enemyType.Trim();
             if (enemyDefs.TryGetValue(trimmedType, out UnitData enemyUnitData))
@@ -109,38 +104,7 @@ public class CombatManager : MonoBehaviour
                 Debug.LogError($"Enemy type '{trimmedType}' not in enemyDefs");
             }
         }
-
-        for (int i = 0; i < enemyData.Count; i++)
-        {
-            SpawnUnit(
-                unitPrefab: enemyPrefab,
-                statusPanelPrefab: enemyStatusPanel,
-                position: enemyPosition,
-                direction: new Vector2(-1, 1), // NW direction
-                unitList: enemyUnits,
-                count: enemyData.Count,
-                positionNum: i,
-                unitData: enemyData[i]
-            );
-        }
-
-        turnState = TurnState.PLAYER;
-
-        if (playerUnits.Count > 0)
-        {
-            activePlayerUnit = playerUnits[0];
-        }
-        RefreshUnitSelections();
-        messageLog.AddMessage($"<color=red>DEBUG:</color>Loading level {currentLevel}");
-        messageLog.AddMessage($"Starting turn {turnNumber}.");
-    }
-
-    private void Update()
-    {
-        if (turnState == TurnState.ENEMY) // yes, it triggers exactly once and when needed, already checked that
-        {
-            StartCoroutine(HandleEnemyTurn());
-        }
+        return enemyData;
     }
 
     private void SpawnUnit(GameObject unitPrefab, GameObject statusPanelPrefab, Transform position, List<Unit> unitList, Vector2 direction, int count, int positionNum, UnitData unitData)
@@ -299,7 +263,7 @@ public class CombatManager : MonoBehaviour
         {
             messageLog.AddMessage($"<color=yellow>{unit.unitName} has fainted.</color>");
             playerUnits.Remove(unit);
-            UnitData unitData = UnitDataFromFile.playerUnits.FirstOrDefault(data => data.Name == unit.unitName);
+            UnitData unitData = SaveFileData.playerUnits.FirstOrDefault(data => data.Name == unit.unitName);
             unitData.CurrHP = 0;
         }
         else if (enemyUnits.Contains(unit))
@@ -334,7 +298,7 @@ public class CombatManager : MonoBehaviour
         {
             Debug.Log("All enemies have been defeated. Victory!");
             PrepareDataToSave();
-            SaveFileManager.Instance.SaveGame(UnitDataFromFile);
+            FileOperationsManager.Instance.SaveGame(SaveFileData);
             CleanupBeforeSceneLoad();
             SceneManager.LoadScene("BattleScene");
         }
@@ -415,7 +379,7 @@ public class CombatManager : MonoBehaviour
     {
         foreach (Unit unit in playerUnits)
         {
-            UnitData unitData = UnitDataFromFile.playerUnits.FirstOrDefault(data => data.Name == unit.unitName);
+            UnitData unitData = SaveFileData.playerUnits.FirstOrDefault(data => data.Name == unit.unitName);
             if (unitData != null)
             {
                 unitData.CurrHP = unit.currHP;
@@ -423,7 +387,7 @@ public class CombatManager : MonoBehaviour
             }
         }
         // temp solution for linear levels:
-        UnitDataFromFile.NextLevelToLoad = UnitDataFromFile.NextLevelToLoad + 1;
+        SaveFileData.NextLevelToLoad = SaveFileData.NextLevelToLoad + 1;
     }
 
     public void CleanupBeforeSceneLoad()
@@ -431,7 +395,7 @@ public class CombatManager : MonoBehaviour
         // idk if neccesary, better to be safe
         playerUnits.Clear();
         enemyUnits.Clear();
-        UnitDataFromFile = null;
+        SaveFileData = null;
         messageLog.ClearMessages();
     }
 
