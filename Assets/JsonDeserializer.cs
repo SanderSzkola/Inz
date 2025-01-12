@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 [System.Serializable]
@@ -80,4 +81,41 @@ public class SpellData
 public class SpellDataList
 {
     public List<SpellData> spells;
+}
+
+[Serializable]
+public class MapNodeData
+{
+    public int X;
+    public int Y;
+    public List<int> NextNodeIndices;
+
+    public MapNodeData(int x, int y)
+    {
+        X = x;
+        Y = y;
+        NextNodeIndices = new List<int>();
+    }
+}
+
+[Serializable]
+public class FloorData
+{
+    public List<MapNodeData> Nodes;
+
+    public FloorData()
+    {
+        Nodes = new List<MapNodeData>();
+    }
+}
+
+[Serializable]
+public class MapData
+{
+    public List<FloorData> Floors;
+
+    public MapData()
+    {
+        Floors = new List<FloorData>();
+    }
 }

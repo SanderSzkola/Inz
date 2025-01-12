@@ -204,7 +204,7 @@ public class Unit : MonoBehaviour
         StartCoroutine(TakeDamageAnim());
     }
 
-    private void Die() // TODO: add logic to revieve player units?
+    private void Die()
     {
         combatManager.RemoveUnit(this);
         Destroy(selectionIndicator);
@@ -237,7 +237,7 @@ public class Unit : MonoBehaviour
         {
             spell.ReduceCooldown();
         }
-        ChangeHPBy(mpRegen);
+        ChangeMPBy(mpRegen);
     }
 
     public IEnumerator TakeDamageAnim(float duration = 0.3f, float intensity = 1f)

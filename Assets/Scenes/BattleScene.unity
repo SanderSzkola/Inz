@@ -159,9 +159,7 @@ MonoBehaviour:
   enemyStatusPanel: {fileID: 7047460418081036337, guid: 534eec733ebfc304b8353716e57a7b6e, type: 3}
   enemyPosition: {fileID: 1396855395}
   selectionIndicatorPrefab: {fileID: 2944381559112857997, guid: 09cddfb0d145e514cb109156c52246f0, type: 3}
-  selectionIndicatorOffset: -30
   spellPanel: {fileID: 2108903836}
-  currentLevel: 1
 --- !u!4 &27811294
 Transform:
   m_ObjectHideFlags: 0

@@ -1695,8 +1695,9 @@ GameObject:
   - component: {fileID: 1101379459}
   - component: {fileID: 1101379461}
   - component: {fileID: 1101379462}
+  - component: {fileID: 1101379463}
   m_Layer: 0
-  m_Name: SaveFileManager
+  m_Name: FileOperationsManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1756,6 +1757,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   savePanel: {fileID: 130690915}
+--- !u!114 &1101379463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1101379458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4c8f22dd9241c5498579bef835c1a6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  NumFloors: 10
+  FloorWidth: 6
 --- !u!1 &1205111954
 GameObject:
   m_ObjectHideFlags: 0

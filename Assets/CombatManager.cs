@@ -1,10 +1,6 @@
 using System.Collections.Generic;
 using System.Collections;
-using System.IO;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
 using System.Linq;
 using UnityEngine.SceneManagement;
 
@@ -26,7 +22,7 @@ public class CombatManager : MonoBehaviour
 
     public GameObject selectionIndicatorPrefab; // to pass on to each unit
     private readonly float statusPanelOffset = 0.5f; // for creating stPanel below unit, not on top
-    private readonly float selectionIndicatorOffset = -3f;
+    private readonly float selectionIndicatorOffset = -30f;
 
     private Unit activePlayerUnit = null; // does action
     private Unit targetUnit = null; // target of action
@@ -265,6 +261,7 @@ public class CombatManager : MonoBehaviour
             playerUnits.Remove(unit);
             UnitData unitData = SaveFileData.playerUnits.FirstOrDefault(data => data.Name == unit.unitName);
             unitData.CurrHP = 0;
+            unitData.CurrMP = 0;
         }
         else if (enemyUnits.Contains(unit))
         {
