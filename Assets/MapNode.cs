@@ -6,6 +6,7 @@ public class MapNode
     public int Y { get; set; }
     public List<MapNode> NextNodes { get; private set; }
     public List<MapNode> PreviousNodes { get; set; }
+    public NodeButton NodeButton { get; set; }
 
     public MapNode(int x, int y)
     {
@@ -38,3 +39,5 @@ public class MapNode
         return (X == mapNode.X && Y == mapNode.Y);
     }
 }
+
+public enum EncounterType { BATTLE, HARDBATTLE, SKILL, REST, BOSS}

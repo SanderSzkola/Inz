@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class SaveMenuButton : MonoBehaviour
+public class SaveFileMenuButton : MonoBehaviour
 {
     public int SaveSlotNumber;
 

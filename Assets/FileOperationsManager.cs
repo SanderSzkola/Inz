@@ -11,14 +11,17 @@ public class FileOperationsManager : MonoBehaviour
     public string SaveFilePath;
     public int SaveSlot;
 
+    private SaveFileData SaveData;
     private Dictionary<string, UnitData> enemyDefsCache;
     private List<string> levelDefsCache;
     private List<Spell> spellDefsCache;
+    private Dictionary<string, Sprite> mapSprites;
 
-    private readonly string newGameSaveFile = "Defs/newGameSaveFile.json";
-    private readonly string enemyDefsFile = "Defs/enemyDefs.json";
-    private readonly string levelDefsFile = "Defs/levelDefs.json";
-    private readonly string spellDefsFile = "Defs/spellDefs.json";
+    private readonly string newGameSaveFilePath = "Defs/newGameSaveFile.json";
+    private readonly string enemyDefsFilePath = "Defs/enemyDefs.json";
+    private readonly string levelDefsFilePath = "Defs/levelDefs.json";
+    private readonly string spellDefsFilePath = "Defs/spellDefs.json";
+    private readonly string mapSpritesFilePath = "MapSpritesWhite";
 
     private void Awake()
     {
@@ -36,8 +39,10 @@ public class FileOperationsManager : MonoBehaviour
     public void SetUpNewGame(int num)
     {
         SaveSlot = num;
-        SaveFilePath = newGameSaveFile;
-        SceneManager.LoadScene("BattleScene");
+        SaveFilePath = newGameSaveFilePath;
+        NodeMapGenerator.Instance.LoadMapFromData(LoadSaveData().mapData);
+        //SceneManager.LoadScene("BattleScene");
+        SceneManager.LoadScene("MapScene");
     }
 
     private string GetSavePath(int num)
@@ -68,14 +73,17 @@ public class FileOperationsManager : MonoBehaviour
     {
         SaveSlot = num;
         SaveFilePath = GetSavePath(SaveSlot);
+        NodeMapGenerator.Instance.LoadMapFromData(LoadSaveData().mapData);
         SceneManager.LoadScene("BattleScene");
     }
 
-    public void SaveGame(SaveFileData unitDataList)
+    public void SaveGame(SaveFileData saveFileData)
     {
         SaveFilePath = GetSavePath(SaveSlot);
-        string json = JsonUtility.ToJson(unitDataList, true);
+        saveFileData.mapData = NodeMapGenerator.Instance.GetMapData();
+        string json = JsonUtility.ToJson(saveFileData, true);
         File.WriteAllText(SaveFilePath, json);
+        SaveData = null;
     }
 
     public void DeleteSave(int num)
@@ -83,19 +91,23 @@ public class FileOperationsManager : MonoBehaviour
         File.Delete(GetSavePath(num));
     }
 
-    public SaveFileData LoadPlayerData() // no cache bc it needs to be reloaded after each level
+    public SaveFileData LoadSaveData() 
     {
-        string json = File.ReadAllText(SaveFilePath);
-        return JsonUtility.FromJson<SaveFileData>(json);
+        if (SaveData == null)
+        {
+            string json = File.ReadAllText(SaveFilePath);
+            SaveData = JsonUtility.FromJson<SaveFileData>(json);
+        }
+        return SaveData;
     }
 
     public Dictionary<string, UnitData> LoadEnemyDefs()
     {
         if (enemyDefsCache == null)
         {
-            string json = File.ReadAllText(enemyDefsFile);
-            EnemyDefsList enemyDefsWrapper = JsonUtility.FromJson<EnemyDefsList>(json);
-            enemyDefsCache = enemyDefsWrapper.enemyDefs.ToDictionary(e => e.key, e => e.unitData);
+            string json = File.ReadAllText(enemyDefsFilePath);
+            EnemyDefsList enemyDefsList = JsonUtility.FromJson<EnemyDefsList>(json);
+            enemyDefsCache = enemyDefsList.enemyDefs.ToDictionary(e => e.key, e => e.unitData);
         }
         return enemyDefsCache;
     }
@@ -104,7 +116,7 @@ public class FileOperationsManager : MonoBehaviour
     {
         if (levelDefsCache == null)
         {
-            string json = File.ReadAllText(levelDefsFile);
+            string json = File.ReadAllText(levelDefsFilePath);
             LevelDefsList levelDefsList = JsonUtility.FromJson<LevelDefsList>(json);
             levelDefsCache = new List<string>(levelDefsList.levelDefs);
         }
@@ -116,7 +128,7 @@ public class FileOperationsManager : MonoBehaviour
         if (spellDefsCache == null)
         {
             spellDefsCache = new List<Spell>();
-            string json = File.ReadAllText(spellDefsFile);
+            string json = File.ReadAllText(spellDefsFilePath);
             List<SpellData> spellDataList = JsonUtility.FromJson<SpellDataList>(json).spells;
 
             foreach (SpellData data in spellDataList)
@@ -158,5 +170,25 @@ public class FileOperationsManager : MonoBehaviour
                 Debug.LogWarning($"Unknown targeting mode {data.targetingMode} for spell {data.name}. Skipping.");
                 return null;
         }
+    }
+
+    public Dictionary<string, Sprite> LoadMapSprites()
+    {
+        if (mapSprites == null)
+        {
+            mapSprites = new Dictionary<string, Sprite>();
+
+            // Load all sprites from the folder
+            Sprite[] sprites = Resources.LoadAll<Sprite>(mapSpritesFilePath);
+            foreach (Sprite sprite in sprites)
+            {
+                if (!mapSprites.ContainsKey(sprite.name))
+                {
+                    mapSprites.Add(sprite.name, sprite);
+                }
+            }
+        }
+
+        return mapSprites;
     }
 }

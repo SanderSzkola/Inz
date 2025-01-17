@@ -6,6 +6,7 @@ public class SaveFileData
 {
     public UnitData[] playerUnits;
     public int NextLevelToLoad;
+    public MapData mapData;
 }
 
 [System.Serializable]

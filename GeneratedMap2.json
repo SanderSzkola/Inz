@@ -1,0 +1,271 @@
+{
+    "Floors": [
+        {
+            "Nodes": [
+                {
+                    "X": 0,
+                    "Y": 2,
+                    "NextNodeIndices": [
+                        0,
+                        3
+                    ]
+                },
+                {
+                    "X": 0,
+                    "Y": 4,
+                    "NextNodeIndices": [
+                        1,
+                        2
+                    ]
+                }
+            ]
+        },
+        {
+            "Nodes": [
+                {
+                    "X": 1,
+                    "Y": 1,
+                    "NextNodeIndices": [
+                        0
+                    ]
+                },
+                {
+                    "X": 1,
+                    "Y": 5,
+                    "NextNodeIndices": [
+                        1
+                    ]
+                },
+                {
+                    "X": 1,
+                    "Y": 4,
+                    "NextNodeIndices": [
+                        1
+                    ]
+                },
+                {
+                    "X": 1,
+                    "Y": 3,
+                    "NextNodeIndices": [
+                        2
+                    ]
+                }
+            ]
+        },
+        {
+            "Nodes": [
+                {
+                    "X": 2,
+                    "Y": 1,
+                    "NextNodeIndices": [
+                        0
+                    ]
+                },
+                {
+                    "X": 2,
+                    "Y": 5,
+                    "NextNodeIndices": [
+                        1
+                    ]
+                },
+                {
+                    "X": 2,
+                    "Y": 2,
+                    "NextNodeIndices": [
+                        0
+                    ]
+                }
+            ]
+        },
+        {
+            "Nodes": [
+                {
+                    "X": 3,
+                    "Y": 2,
+                    "NextNodeIndices": [
+                        0,
+                        2
+                    ]
+                },
+                {
+                    "X": 3,
+                    "Y": 4,
+                    "NextNodeIndices": [
+                        1
+                    ]
+                }
+            ]
+        },
+        {
+            "Nodes": [
+                {
+                    "X": 4,
+                    "Y": 1,
+                    "NextNodeIndices": [
+                        0
+                    ]
+                },
+                {
+                    "X": 4,
+                    "Y": 4,
+                    "NextNodeIndices": [
+                        1,
+                        2
+                    ]
+                },
+                {
+                    "X": 4,
+                    "Y": 3,
+                    "NextNodeIndices": [
+                        0,
+                        1
+                    ]
+                }
+            ]
+        },
+        {
+            "Nodes": [
+                {
+                    "X": 5,
+                    "Y": 2,
+                    "NextNodeIndices": [
+                        0,
+                        1
+                    ]
+                },
+                {
+                    "X": 5,
+                    "Y": 3,
+                    "NextNodeIndices": [
+                        1
+                    ]
+                },
+                {
+                    "X": 5,
+                    "Y": 5,
+                    "NextNodeIndices": [
+                        2
+                    ]
+                }
+            ]
+        },
+        {
+            "Nodes": [
+                {
+                    "X": 6,
+                    "Y": 1,
+                    "NextNodeIndices": [
+                        0,
+                        3
+                    ]
+                },
+                {
+                    "X": 6,
+                    "Y": 2,
+                    "NextNodeIndices": [
+                        2,
+                        0
+                    ]
+                },
+                {
+                    "X": 6,
+                    "Y": 5,
+                    "NextNodeIndices": [
+                        1
+                    ]
+                }
+            ]
+        },
+        {
+            "Nodes": [
+                {
+                    "X": 7,
+                    "Y": 1,
+                    "NextNodeIndices": [
+                        0,
+                        2
+                    ]
+                },
+                {
+                    "X": 7,
+                    "Y": 4,
+                    "NextNodeIndices": [
+                        1,
+                        3
+                    ]
+                },
+                {
+                    "X": 7,
+                    "Y": 3,
+                    "NextNodeIndices": [
+                        1
+                    ]
+                },
+                {
+                    "X": 7,
+                    "Y": 0,
+                    "NextNodeIndices": [
+                        2
+                    ]
+                }
+            ]
+        },
+        {
+            "Nodes": [
+                {
+                    "X": 8,
+                    "Y": 2,
+                    "NextNodeIndices": [
+                        0
+                    ]
+                },
+                {
+                    "X": 8,
+                    "Y": 4,
+                    "NextNodeIndices": [
+                        1,
+                        3
+                    ]
+                },
+                {
+                    "X": 8,
+                    "Y": 0,
+                    "NextNodeIndices": [
+                        2
+                    ]
+                },
+                {
+                    "X": 8,
+                    "Y": 5,
+                    "NextNodeIndices": [
+                        1
+                    ]
+                }
+            ]
+        },
+        {
+            "Nodes": [
+                {
+                    "X": 9,
+                    "Y": 2,
+                    "NextNodeIndices": []
+                },
+                {
+                    "X": 9,
+                    "Y": 5,
+                    "NextNodeIndices": []
+                },
+                {
+                    "X": 9,
+                    "Y": 1,
+                    "NextNodeIndices": []
+                },
+                {
+                    "X": 9,
+                    "Y": 3,
+                    "NextNodeIndices": []
+                }
+            ]
+        }
+    ]
+}

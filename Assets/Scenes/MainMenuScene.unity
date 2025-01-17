@@ -1771,6 +1771,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   NumFloors: 10
   FloorWidth: 6
+  SoftDesiredNumOfConnections: 6
 --- !u!1 &1205111954
 GameObject:
   m_ObjectHideFlags: 0

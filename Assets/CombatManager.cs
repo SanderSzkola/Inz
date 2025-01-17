@@ -48,7 +48,7 @@ public class CombatManager : MonoBehaviour
         spells = FileOperationsManager.Instance.LoadSpellDefs();
 
         // Load player units
-        SaveFileData = FileOperationsManager.Instance.LoadPlayerData();
+        SaveFileData = FileOperationsManager.Instance.LoadSaveData();
         List<UnitData> playerData = new List<UnitData>(SaveFileData.playerUnits);
 
         foreach (var playerUnit in playerData)
