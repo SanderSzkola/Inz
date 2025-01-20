@@ -31,7 +31,7 @@
             "PDef": 20,
             "MAtk": 30,
             "MDef": 10,
-            "SpellNames": "Recharge,Fireball",
+            "SpellNames": "Recharge,Fireball,Ice Shard",
             "FireRes": 0,
             "IceRes": 0,
             "maskRed": 0.2,
@@ -50,7 +50,7 @@
             "PDef": 20,
             "MAtk": 30,
             "MDef": 10,
-            "SpellNames": "Recharge,Fireball",
+            "SpellNames": "Recharge,Fireball,Ice Shard",
             "FireRes": 0,
             "IceRes": 0,
             "maskRed": 0.9,
@@ -58,5 +58,5 @@
             "maskBlue": 0.2
         }
     ],
-    "NextLevelToLoad": 0
+    "NextLevelToLoad": -1
 }

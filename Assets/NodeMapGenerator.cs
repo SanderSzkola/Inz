@@ -8,8 +8,9 @@ public class NodeMapGenerator : MonoBehaviour
     public static NodeMapGenerator Instance { get; private set; }
 
     public List<List<MapNode>> Map;
+    public int CurrentFloor;
 
-    public readonly int NumFloors = 10;
+    public readonly int NumFloors = 9;
     public readonly int FloorWidth = 5;
     private readonly int MaxNodesPerFloor = 5;
     private readonly int MaxLengthOfStraigthPath = 3;
@@ -27,6 +28,18 @@ public class NodeMapGenerator : MonoBehaviour
 
         DontDestroyOnLoad(gameObject);
     }
+
+    //private void Start()
+    //{
+    //    string path = "testMap";
+    //    if(Map == null)
+    //    {
+    //        GenerateMap();
+    //    }
+    //    DebugSaveMapToFile(path);
+    //    DebugLoadMapFromFile(path);
+    //    DebugSaveMapToFile(path + "2");
+    //}
 
     private void GenerateMap()
     {
@@ -70,6 +83,7 @@ public class NodeMapGenerator : MonoBehaviour
             CorrectPaths(Map[floorIndex - 1]);
             Map.Add(currentFloor);
         }
+        AssignEncounterTypes();
     }
 
     private void GenerateNode(MapNode baseNode, MapNode[] alreadyGenerated, List<MapNode> currentFloor, int floorIndex, bool ignoreStraightPathCheck = false)
@@ -120,6 +134,7 @@ public class NodeMapGenerator : MonoBehaviour
         return true;
     }
 
+    // straighten crossed "X" connections
     private void CorrectPaths(List<MapNode> previousFloor)
     {
         List<(MapNode nodeA, MapNode nodeB, MapNode nextA, MapNode nextB)> swaps = new List<(MapNode, MapNode, MapNode, MapNode)>();
@@ -155,24 +170,73 @@ public class NodeMapGenerator : MonoBehaviour
         }
     }
 
+    private void AssignEncounterTypes()
+    {
+        int middlePoint = NumFloors / 2;
+        int endPoint = NumFloors - 1;
+        foreach (var floor in Map)
+        {
+            foreach (MapNode node in floor)
+            {
+                // Easy start: first nodes are always BATTLE
+                if (node.X <= 1)
+                {
+                    node.EncounterType = EncounterType.BATTLE;
+                }
+                // Rest in the middle and end floor
+                else if (node.X == middlePoint || node.X == endPoint)
+                {
+                    node.EncounterType = EncounterType.REST;
+                }
+                // Assign random encounter type, reroll if necessary
+                else
+                {
+                    do
+                    {
+                        node.EncounterType = EncounterHelper.GetRandomEncounterType();
+
+                        bool hasConflict = false;
+                        foreach (MapNode prevNode in node.PreviousNodes)
+                        {
+                            if (prevNode.EncounterType != EncounterType.BATTLE
+                                && prevNode.EncounterType == node.EncounterType
+                                || node.EncounterType == EncounterType.REST
+                                && (node.X == middlePoint - 1 || node.X == endPoint - 1))
+                            {
+                                hasConflict = true;
+                                break;
+                            }
+                        }
+                        if (!hasConflict)
+                            break;
+
+                    } while (true);
+                }
+            }
+        }
+    }
+
+
     public MapData GetMapData()
     {
         if (Map == null)
         {
-            Debug.LogError("Tried to get MapData before it was initialized");
-            return null;
+            throw new IOException("Tried to get MapData before it was initialized");
         }
 
-        MapData mapData = new MapData();
-        foreach (var floor in Map)
+        MapData mapData = new MapData(CurrentFloor);
+        for (int floorNum = 0; floorNum < Map.Count; floorNum++)
         {
+            var floor = Map[floorNum];
+            var nextFloor = floorNum < Map.Count - 1 ? Map[floorNum + 1] : null;
             FloorData floorData = new FloorData();
             foreach (var node in floor)
             {
-                MapNodeData nodeData = new MapNodeData(node.X, node.Y);
+                MapNodeData nodeData = new MapNodeData(node.X, node.Y, node.EncounterType, node.IsPlayerHere);
                 foreach (var nextNode in node.NextNodes)
                 {
-                    int index = floor.IndexOf(nextNode);
+                    if (nextFloor == null) break;
+                    int index = nextFloor.IndexOf(nextNode);
                     if (index != -1)
                     {
                         nodeData.NextNodeIndices.Add(index);
@@ -187,12 +251,13 @@ public class NodeMapGenerator : MonoBehaviour
 
     public void LoadMapFromData(MapData mapData)
     {
-        if (mapData == null || mapData.Floors.Count == 0)
+        if (mapData == null || mapData.Floors == null || mapData.Floors.Count == 0)
         {
             GenerateMap();
+            CurrentFloor = -1;
             return;
         }
-
+        CurrentFloor = mapData.CurrentFloor;
         Map = new List<List<MapNode>>();
 
         foreach (FloorData floorData in mapData.Floors)
@@ -200,7 +265,7 @@ public class NodeMapGenerator : MonoBehaviour
             List<MapNode> floor = new List<MapNode>();
             foreach (MapNodeData nodeData in floorData.Nodes)
             {
-                floor.Add(new MapNode(nodeData.X, nodeData.Y));
+                floor.Add(new MapNode(nodeData.X, nodeData.Y, nodeData.EncounterType, nodeData.IsPlayerHere));
             }
             Map.Add(floor);
         }
@@ -268,14 +333,14 @@ public class NodeMapGenerator : MonoBehaviour
 
     private void DebugSaveMapToFile(string filePath)
     {
-        MapData mapData = new MapData();
+        MapData mapData = new MapData(CurrentFloor);
         for (int i = 0; i < Map.Count; i++)
         {
             var floor = Map[i];
             FloorData floorData = new FloorData();
             foreach (var node in floor)
             {
-                MapNodeData nodeData = new MapNodeData(node.X, node.Y);
+                MapNodeData nodeData = new MapNodeData(node.X, node.Y, node.EncounterType, node.IsPlayerHere);
                 foreach (var nextNode in node.NextNodes)
                 {
                     if (i < Map.Count)
@@ -316,7 +381,7 @@ public class NodeMapGenerator : MonoBehaviour
             List<MapNode> floor = new List<MapNode>();
             foreach (MapNodeData nodeData in floorData.Nodes)
             {
-                floor.Add(new MapNode(nodeData.X, nodeData.Y));
+                floor.Add(new MapNode(nodeData.X, nodeData.Y, nodeData.EncounterType, nodeData.IsPlayerHere));
             }
             Map.Add(floor);
         }

@@ -1,5 +1,7 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 
@@ -7,45 +9,73 @@ public class NodeButton : MonoBehaviour
 {
     public MapNode Node;
     private Button Button;
-    private bool playing = false;
+    private static Color ColorBrown = new Color(0.15f, 0.1f, 0f);
+    private static Color ColorRed = new Color(1f, 0.4f, 0.4f);
 
     private void Awake()
     {
         Button = GetComponent<Button>();
         Button.onClick.RemoveAllListeners();
-        Button.onClick.AddListener(() => ShowPosition());
-        Button.image.color = new Color(0.5f, 0.3f, 0f);
+        Button.onClick.AddListener(() => TryMoveHere());
     }
 
-    public void SetSprite(Sprite sprite)
+    public void Initialize(MapNode node, Sprite sprite)
     {
+        Node = node;
+        node.NodeButton = this;
         Button.image.sprite = sprite;
+        RefreshColor();
     }
 
-    void ShowPosition()
+    public void SetSprite(Dictionary<EncounterType, Sprite> dictionary)
     {
-        Debug.Log($"{Node.X}, {Node.Y}");
-        foreach (MapNode node in Node.NextNodes)
+        Button.image.sprite = EncounterHelper.GetSpriteFromType(Node.EncounterType, dictionary);
+    }
+
+    public void RefreshColor()
+    {
+        if (Node != null && Node.IsPlayerHere)
         {
-            if (node != null && node.NodeButton != null)
+            Button.image.color = ColorRed;
+        }
+        else
+        {
+            Button.image.color = ColorBrown;
+        }
+    }
+
+    void TryMoveHere()
+    {
+        bool canMove = Node.X == 0 && NodeMapGenerator.Instance.CurrentFloor == -1;
+
+        if (!canMove && Node.PreviousNodes != null)
+        {
+            foreach (MapNode prevNode in Node.PreviousNodes)
             {
-                node.NodeButton.StartCoroutine(node.NodeButton.FlashRed());
+                if (prevNode.IsPlayerHere)
+                {
+                    canMove = true;
+                    prevNode.IsPlayerHere = false;
+                    prevNode.NodeButton.RefreshColor();
+                    break;
+                }
             }
         }
+
+        if (canMove)
+        {
+            Node.IsPlayerHere = true;
+            NodeMapGenerator.Instance.CurrentFloor = Node.X;
+            RefreshColor();
+            MoveHere();
+            SceneManager.LoadScene("BattleScene");
+        }
+
     }
 
-    public IEnumerator FlashRed()
+    // TODO: some graphic pointer or circle or whatever, to show the movement
+    public IEnumerator MoveHere()
     {
-        if (playing) yield break;
-        playing = true;
-        Color originalColor = Button.image.color;
-        Button.image.color = Color.red;
-        yield return new WaitForSeconds(0.5f);
-        Button.image.color = originalColor;
-        playing = false;
-        foreach (MapNode node in Node.NextNodes)
-        {
-            node.NodeButton.StartCoroutine(node.NodeButton.FlashRed());
-        }
+        yield return null;
     }
 }

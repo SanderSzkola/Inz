@@ -36,7 +36,6 @@ public class CombatManager : MonoBehaviour
 
     private Dictionary<string, UnitData> enemyDefs;
     private List<string> levelDefs;
-    private int currentLevel = 0;
 
     private SaveFileData SaveFileData;
 
@@ -56,14 +55,12 @@ public class CombatManager : MonoBehaviour
             SpawnUnit(playerPrefab, playerStatusPanel, playerPosition, playerUnits, new Vector2(1, 1), playerData.Count, playerData.IndexOf(playerUnit), playerUnit);
         }
 
-        currentLevel = SaveFileData.NextLevelToLoad;
-
         // Load enemy and level definitions
         enemyDefs = FileOperationsManager.Instance.LoadEnemyDefs();
         levelDefs = FileOperationsManager.Instance.LoadLevelDefs();
 
         // Prepare enemies for the current level
-        List<UnitData> enemyData = PrepareEnemiesForLevel(levelDefs[currentLevel]);
+        List<UnitData> enemyData = PrepareEnemiesForLevel(levelDefs[NodeMapGenerator.Instance.CurrentFloor]);
 
         for (int i = 0; i < enemyData.Count; i++)
         {
@@ -74,7 +71,7 @@ public class CombatManager : MonoBehaviour
         activePlayerUnit = playerUnits.Count > 0 ? playerUnits[0] : null;
         RefreshUnitSelections();
 
-        messageLog.AddMessage($"<color=red>DEBUG:</color>Loading level {currentLevel}");
+        messageLog.AddMessage($"<color=red>DEBUG:</color>Loading level {NodeMapGenerator.Instance.CurrentFloor}");
         messageLog.AddMessage($"Starting turn {turnNumber}.");
     }
 
@@ -297,7 +294,7 @@ public class CombatManager : MonoBehaviour
             PrepareDataToSave();
             FileOperationsManager.Instance.SaveGame(SaveFileData);
             CleanupBeforeSceneLoad();
-            SceneManager.LoadScene("BattleScene");
+            SceneManager.LoadScene("MapScene");
         }
     }
 
@@ -383,8 +380,6 @@ public class CombatManager : MonoBehaviour
                 unitData.CurrMP = unit.currMP;
             }
         }
-        // temp solution for linear levels:
-        SaveFileData.NextLevelToLoad = SaveFileData.NextLevelToLoad + 1;
     }
 
     public void CleanupBeforeSceneLoad()

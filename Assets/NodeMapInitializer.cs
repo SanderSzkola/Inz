@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,13 +21,13 @@ public class NodeMapInitializer : MonoBehaviour
         Dictionary<MapNode, Button> nodeToButtonMap = new Dictionary<MapNode, Button>();
 
         int maxRows = NodeMapGenerator.Instance.FloorWidth;
-        int maxCols = NodeMapGenerator.Instance.NumFloors;
+        int maxCols = NodeMapGenerator.Instance.NumFloors + 2; // space for boss
         float usableWidth = mapRect.rect.width * 0.9f;
         float usableHeight = mapRect.rect.height * 0.8f;
         float marginX = mapRect.rect.width * 0.1f;
         float marginY = mapRect.rect.height * 0.15f;
 
-        Dictionary<string, Sprite> sprites = FileOperationsManager.Instance.LoadMapSprites();
+        Dictionary<EncounterType, Sprite> sprites = FileOperationsManager.Instance.LoadMapSprites();
         // Generate buttons
         foreach (var floor in NodeMapGenerator.Instance.Map)
         {
@@ -44,16 +46,13 @@ public class NodeMapInitializer : MonoBehaviour
                 NodeButton nodeButton = button.GetComponent<NodeButton>();
                 if (nodeButton != null)
                 {
-                    nodeButton.Node = node;
-                    node.NodeButton = nodeButton;
-
-                    nodeButton.SetSprite(sprites.Values.ElementAt(Random.Range(0, sprites.Count)));
+                    nodeButton.Initialize(node, EncounterHelper.GetSpriteFromType(node.EncounterType, sprites));
                 }
             }
         }
 
         // Generate connections
-        Texture2D texture = GenerateDashedTexture();
+        Texture2D texture = GenerateTexture();
         foreach (var node in nodeToButtonMap.Keys)
         {
             if (node.PreviousNodes == null) continue;
@@ -77,7 +76,6 @@ public class NodeMapInitializer : MonoBehaviour
                 Vector3 adjustedStart = startCenter + direction * startRadius;
                 Vector3 adjustedEnd = endCenter - direction * endRadius;
 
-                // Convert to world positions
                 Vector3 worldStart = MapGameObject.GetComponent<RectTransform>().TransformPoint(adjustedStart);
                 Vector3 worldEnd = MapGameObject.GetComponent<RectTransform>().TransformPoint(adjustedEnd);
 
@@ -85,26 +83,26 @@ public class NodeMapInitializer : MonoBehaviour
                 GameObject lineObject = new GameObject("ConnectionLine");
                 lineObject.transform.SetParent(MapGameObject, true);
 
-                // Add LineRenderer
                 LineRenderer lineRenderer = lineObject.AddComponent<LineRenderer>();
                 lineRenderer.positionCount = 2;
                 lineRenderer.SetPositions(new Vector3[] { worldStart, worldEnd });
-                lineRenderer.startWidth = 0.7f;
-                lineRenderer.endWidth = 0.7f;
+                lineRenderer.startWidth = 0.9f;
+                lineRenderer.endWidth = 0.9f;
 
                 // Apply dashed or dotted material
-                Material dashedMaterial = new Material(Shader.Find("Sprites/Default"));
-                dashedMaterial.mainTexture = texture;
-                dashedMaterial.mainTextureScale = new Vector2(1f, 1f);
-                lineRenderer.material = dashedMaterial;
+                Material material = new Material(Shader.Find("Sprites/Default"));
+                material.mainTexture = texture;
+                material.mainTextureScale = new Vector2(1f, 1f);
+                lineRenderer.material = material;
                 lineRenderer.startColor = Color.black;
                 lineRenderer.endColor = Color.black;
             }
         }
     }
 
-    Texture2D GenerateDashedTexture()
+    Texture2D GenerateTexture()
     {
+        // Something like [ # # # # ] 
         Texture2D texture = new Texture2D(23, 23);
         int w = texture.width;
         int h = texture.height;

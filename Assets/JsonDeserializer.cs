@@ -5,7 +5,6 @@ using System.Collections.Generic;
 public class SaveFileData
 {
     public UnitData[] playerUnits;
-    public int NextLevelToLoad;
     public MapData mapData;
 }
 
@@ -90,12 +89,16 @@ public class MapNodeData
     public int X;
     public int Y;
     public List<int> NextNodeIndices;
+    public string EncounterType;
+    public bool IsPlayerHere;
 
-    public MapNodeData(int x, int y)
+    public MapNodeData(int x, int y, EncounterType encounterType, bool isPlayerHere)
     {
         X = x;
         Y = y;
         NextNodeIndices = new List<int>();
+        EncounterType = encounterType.ToString();
+        IsPlayerHere = isPlayerHere;
     }
 }
 
@@ -114,9 +117,11 @@ public class FloorData
 public class MapData
 {
     public List<FloorData> Floors;
+    public int CurrentFloor;
 
-    public MapData()
+    public MapData(int currentFloor)
     {
         Floors = new List<FloorData>();
+        CurrentFloor = currentFloor;
     }
 }

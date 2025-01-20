@@ -15,7 +15,7 @@ public class FileOperationsManager : MonoBehaviour
     private Dictionary<string, UnitData> enemyDefsCache;
     private List<string> levelDefsCache;
     private List<Spell> spellDefsCache;
-    private Dictionary<string, Sprite> mapSprites;
+    private Dictionary<EncounterType, Sprite> mapSprites;
 
     private readonly string newGameSaveFilePath = "Defs/newGameSaveFile.json";
     private readonly string enemyDefsFilePath = "Defs/enemyDefs.json";
@@ -41,6 +41,7 @@ public class FileOperationsManager : MonoBehaviour
         SaveSlot = num;
         SaveFilePath = newGameSaveFilePath;
         NodeMapGenerator.Instance.LoadMapFromData(LoadSaveData().mapData);
+
         //SceneManager.LoadScene("BattleScene");
         SceneManager.LoadScene("MapScene");
     }
@@ -74,7 +75,7 @@ public class FileOperationsManager : MonoBehaviour
         SaveSlot = num;
         SaveFilePath = GetSavePath(SaveSlot);
         NodeMapGenerator.Instance.LoadMapFromData(LoadSaveData().mapData);
-        SceneManager.LoadScene("BattleScene");
+        SceneManager.LoadScene("MapScene");
     }
 
     public void SaveGame(SaveFileData saveFileData)
@@ -171,24 +172,30 @@ public class FileOperationsManager : MonoBehaviour
                 return null;
         }
     }
-
-    public Dictionary<string, Sprite> LoadMapSprites()
+public Dictionary<EncounterType, Sprite> LoadMapSprites()
+{
+    if (mapSprites == null)
     {
-        if (mapSprites == null)
-        {
-            mapSprites = new Dictionary<string, Sprite>();
+        mapSprites = new Dictionary<EncounterType, Sprite>();
 
-            // Load all sprites from the folder
-            Sprite[] sprites = Resources.LoadAll<Sprite>(mapSpritesFilePath);
-            foreach (Sprite sprite in sprites)
+        Sprite[] sprites = Resources.LoadAll<Sprite>(mapSpritesFilePath);
+        foreach (Sprite sprite in sprites)
+        {
+            if (Enum.TryParse(sprite.name, true, out EncounterType encounterType))
             {
-                if (!mapSprites.ContainsKey(sprite.name))
+                if (!mapSprites.ContainsKey(encounterType))
                 {
-                    mapSprites.Add(sprite.name, sprite);
+                    mapSprites.Add(encounterType, sprite);
                 }
             }
+            else
+            {
+                Debug.LogWarning($"Sprite name '{sprite.name}' does not match any EncounterType.");
+            }
         }
-
-        return mapSprites;
     }
+
+    return mapSprites;
+}
+
 }
