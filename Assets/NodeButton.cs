@@ -68,7 +68,26 @@ public class NodeButton : MonoBehaviour
             NodeMapGenerator.Instance.CurrentFloor = Node.X;
             RefreshColor();
             MoveHere();
-            SceneManager.LoadScene("BattleScene");
+            UnitData[] unitData = FileOperationsManager.Instance.LoadSaveData().playerUnits;
+            switch (Node.EncounterType)
+            {
+                case EncounterType.SKILL:
+                    foreach (UnitData unit in unitData)
+                    {
+                        unit.SkillPoints += 1;
+                    }
+                    break;
+                case EncounterType.REST:
+                    foreach (UnitData unit in unitData)
+                    {
+                        unit.ProcessRest();
+                    }
+                    break;
+                default:
+                    SceneManager.LoadScene("BattleScene");
+                    break;
+            }
+
         }
 
     }

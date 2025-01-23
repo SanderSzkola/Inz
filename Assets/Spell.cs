@@ -76,6 +76,11 @@ public abstract class Spell
         if (unit.isPlayerUnit) return "<color=green>";
         else return "<color=red>";
     }
+
+    public virtual string Description()
+    {
+        return "Should be overriden";
+    }
 }
 
 public class AttackSpell : Spell
@@ -101,6 +106,18 @@ public class AttackSpell : Spell
         StartCooldown();
         caster.canAct = false;
     }
+
+    public override string Description()
+    {
+        string damageType = Element == Element.None ? "Psyhical" : $"Magical";
+        string s = $"{Name}";
+        s += $"\nDamage: {Power}% of {damageType} attack";
+        if (Element != Element.None) s += $"\nElement: {Element}";
+        s += $"\nMP cost: {MPCost}";
+        s += $"\nCooldown: {Cooldown}";
+        s += $"\nTargeting mode: {TargetingMode}";
+        return s;
+    }
 }
 
 public class RestoreSpell : Spell
@@ -119,5 +136,13 @@ public class RestoreSpell : Spell
 
         StartCooldown();
         caster.canAct = false;
+    }
+    public override string Description()
+    {
+        string s = $"{Name}";
+        s += $"\nWeak Restore spell. Increases MP by: {Power}";
+        s += $"\nCooldown: {Cooldown}";
+        s += $"\nTargeting mode: {TargetingMode}";
+        return s;
     }
 }

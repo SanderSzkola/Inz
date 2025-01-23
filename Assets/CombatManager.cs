@@ -263,6 +263,10 @@ public class CombatManager : MonoBehaviour
         else if (enemyUnits.Contains(unit))
         {
             messageLog.AddMessage($"<color=yellow>{unit.unitName} has been defeated.</color>");
+            foreach(Unit playerUnit in playerUnits)
+            {
+                playerUnit.Exp += unit.ExpOnDeath;
+            }
             enemyUnits.Remove(unit);
         }
 
@@ -290,7 +294,6 @@ public class CombatManager : MonoBehaviour
         }
         else if (enemyUnits.Count == 0)
         {
-            Debug.Log("All enemies have been defeated. Victory!");
             PrepareDataToSave();
             FileOperationsManager.Instance.SaveGame(SaveFileData);
             CleanupBeforeSceneLoad();
@@ -378,6 +381,7 @@ public class CombatManager : MonoBehaviour
             {
                 unitData.CurrHP = unit.CurrHP;
                 unitData.CurrMP = unit.CurrMP;
+                unitData.Exp = unit.Exp;
             }
         }
     }

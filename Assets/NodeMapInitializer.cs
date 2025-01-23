@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEditor.Experimental.GraphView;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,14 +9,14 @@ public class NodeMapInitializer : MonoBehaviour
 
     void Start()
     {
-        GenerateButtons();
+        FillMap();
     }
 
-    void GenerateButtons()
+    void FillMap()
     {
         RectTransform mapRect = MapGameObject.GetComponent<RectTransform>();
         Dictionary<MapNode, Button> nodeToButtonMap = new Dictionary<MapNode, Button>();
-
+        Dictionary<EncounterType, Sprite> sprites = FileOperationsManager.Instance.LoadMapSprites();
         int maxRows = NodeMapGenerator.Instance.FloorWidth;
         int maxCols = NodeMapGenerator.Instance.NumFloors + 2; // space for boss
         float usableWidth = mapRect.rect.width * 0.9f;
@@ -27,7 +24,7 @@ public class NodeMapInitializer : MonoBehaviour
         float marginX = mapRect.rect.width * 0.1f;
         float marginY = mapRect.rect.height * 0.15f;
 
-        Dictionary<EncounterType, Sprite> sprites = FileOperationsManager.Instance.LoadMapSprites();
+
         // Generate buttons
         foreach (var floor in NodeMapGenerator.Instance.Map)
         {
@@ -51,8 +48,13 @@ public class NodeMapInitializer : MonoBehaviour
             }
         }
 
-        // Generate connections
+        // Generate texture for connections
         Texture2D texture = GenerateTexture();
+        Material material = new Material(Shader.Find("Sprites/Default"));
+        material.mainTexture = texture;
+        material.mainTextureScale = new Vector2(1f, 1f);
+
+        // Generate connections
         foreach (var node in nodeToButtonMap.Keys)
         {
             if (node.PreviousNodes == null) continue;
@@ -89,10 +91,7 @@ public class NodeMapInitializer : MonoBehaviour
                 lineRenderer.startWidth = 0.9f;
                 lineRenderer.endWidth = 0.9f;
 
-                // Apply dashed or dotted material
-                Material material = new Material(Shader.Find("Sprites/Default"));
-                material.mainTexture = texture;
-                material.mainTextureScale = new Vector2(1f, 1f);
+                // Apply dotted material
                 lineRenderer.material = material;
                 lineRenderer.startColor = Color.black;
                 lineRenderer.endColor = Color.black;

@@ -28,6 +28,7 @@ public class UnitData
     public int Exp;
     public int ExpToNextLevel;
     public int SkillPoints;
+    public int ExpOnDeath;
 
     public int FireRes;
     public int IceRes;
@@ -48,6 +49,24 @@ public class UnitData
     public float SpritePosZ;
     public float SpriteWidth;
     public float SpriteHeight;
+
+    public void ProcessRest()
+    {
+        while (Exp > ExpToNextLevel)
+        {
+            MaxHP += 50;
+            MaxMP += 20;
+            SkillPoints += 1;
+            PAtk += 5;
+            MAtk += 5;
+            PDef += 2;
+            MDef += 2;
+            FireRes += 5;
+            IceRes += 5;
+            Exp -= ExpToNextLevel;
+            ExpToNextLevel *= 2;
+        }
+    }
 }
 
 [System.Serializable]

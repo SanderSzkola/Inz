@@ -12,6 +12,8 @@ public class UpgradeSpellPanel : MonoBehaviour
     private bool IsActive = true;
     private int ShownUnit = 0;
     private Unit initializedUnit;
+    private const int MaxDisplayedSpells = 12;
+    private Color LightBlue = new Color(0f, 0.7f, 1f);
 
     private void Start()
     {
@@ -60,45 +62,45 @@ public class UpgradeSpellPanel : MonoBehaviour
             return;
         }
 
+        var spellsToDisplay = spellDefsCache.Values
+            .Take(MaxDisplayedSpells)
+            .ToList();
+
         int spellIndex = 0;
 
-        // Loop through UpgradeSpell_Row objects
         for (int rowIndex = 0; rowIndex < 4; rowIndex++)
         {
-            // Get reference to UpgradeSpell_Row
             string rowName = rowIndex == 0 ? "UpgradeSpell_Row" : $"UpgradeSpell_Row ({rowIndex})";
             GameObject rowObject = GameObject.Find(rowName);
+
             if (rowObject == null)
             {
                 Debug.LogError($"UpgradeSpell_Row '{rowName}' not found!");
                 continue;
             }
 
-            // Loop through SpellSlot objects in this row
             for (int slotIndex = 0; slotIndex < 3; slotIndex++)
             {
-                // Ensure we don't exceed the spell list
-                if (spellIndex >= spellDefsCache.Count) break;
+                if (spellIndex >= spellsToDisplay.Count) break;
 
-                // Get reference to SpellSlot
                 string slotName = slotIndex == 0 ? "SpellSlot" : $"SpellSlot ({slotIndex})";
                 GameObject slotObject = rowObject.transform.Find(slotName)?.gameObject;
+
                 if (slotObject == null)
                 {
                     Debug.LogError($"SpellSlot '{slotName}' not found in {rowObject.name}!");
                     continue;
                 }
 
-                // Set button properties for the SpellSlot
+                Spell spell = spellsToDisplay[spellIndex];
                 var button = slotObject.GetComponentInChildren<Button>();
-                var spell = spellDefsCache[spellIndex];
 
                 if (button != null)
                 {
-                    // Set button image and onClick behavior
-                    var image = button.GetComponent<Image>();
-                    if (image != null) image.sprite = spell.Graphic;
+                    SpellButton spellButton = button.GetComponentInChildren<SpellButton>();
+                    spellButton.Initialize(spell);
 
+                    button.onClick.RemoveAllListeners();
                     button.onClick.AddListener(() => OnSpellUpgradeClicked(spell));
                 }
 
@@ -109,13 +111,11 @@ public class UpgradeSpellPanel : MonoBehaviour
 
     public void ShowForUnit()
     {
-        // unit
         GameObject unitGameObject = GameObject.Find("Player");
         initializedUnit = unitGameObject.GetComponent<Unit>();
         initializedUnit.InitializeFromData(saveData.playerUnits[ShownUnit], spellDefsCache);
         initializedUnit.ApplyMask();
 
-        // spell
         if (initializedUnit == null || initializedUnit.AvailableSpells == null)
         {
             Debug.LogError("Unit or Unit.AvailableSpells is null.");
@@ -123,48 +123,41 @@ public class UpgradeSpellPanel : MonoBehaviour
         }
 
         int spellIndex = 0;
-
-        for (int rowIndex = 0; rowIndex < 4; rowIndex++)
+        foreach (var spell in spellDefsCache.Values.Take(MaxDisplayedSpells))
         {
-            string rowName = rowIndex == 0 ? "UpgradeSpell_Row" : $"UpgradeSpell_Row ({rowIndex})";
+            string rowName = spellIndex / 3 == 0 ? "UpgradeSpell_Row" : $"UpgradeSpell_Row ({spellIndex / 3})";
             GameObject rowObject = GameObject.Find(rowName);
-            if (rowObject == null) continue;
-
-            for (int slotIndex = 0; slotIndex < 3; slotIndex++)
+            if (rowObject == null)
             {
-                if (spellIndex >= spellDefsCache.Count) break;
+                Debug.LogError($"rowObject not found for {rowName}.");
+                continue;
+            }; ;
 
-                string slotName = slotIndex == 0 ? "SpellSlot" : $"SpellSlot ({slotIndex})";
-                GameObject slotObject = rowObject.transform.Find(slotName)?.gameObject;
-                if (slotObject == null) continue;
+            string slotName = spellIndex % 3 == 0 ? "SpellSlot" : $"SpellSlot ({spellIndex % 3})";
+            GameObject slotObject = rowObject.transform.Find(slotName)?.gameObject;
+            if (slotObject == null)
+            {
+                Debug.LogError($"slotObject not found for {slotName}.");
+                continue;
+            };
 
-                Spell currentSpell = spellDefsCache[spellIndex];
-
-                var button = slotObject.GetComponentInChildren<Button>();
-                if (button == null)
-                {
-                    Debug.LogError($"Button not found for {slotObject.name}.");
-                    continue;
-                }
-
-                var frame = button.transform.Find("Frame");
-                if (frame == null)
-                {
-                    Debug.LogError($"Frame not found for {slotObject.name}.");
-                    continue;
-                }
-
-                var frameImage = frame.GetComponent<Image>();
-                if (frameImage == null)
-                {
-                    Debug.LogError($"FrameImage not found for {slotObject.name}.");
-                    continue;
-                }
-
-                AdjustSpellSlot(initializedUnit, currentSpell, button, frameImage);
-
-                spellIndex++;
+            var button = slotObject.GetComponentInChildren<Button>();
+            if (button == null)
+            {
+                Debug.LogError($"Button not found for {slotObject.name}.");
+                continue;
             }
+
+            var frame = button.transform.Find("Frame")?.GetComponent<Image>();
+            if (frame == null)
+            {
+                Debug.LogError($"Frame not found for {slotObject.name}.");
+                continue;
+            }
+
+            AdjustSpellSlot(spell, button, frame);
+
+            spellIndex++;
         }
 
         // text
@@ -180,43 +173,31 @@ public class UpgradeSpellPanel : MonoBehaviour
         stats.text += $"<b>Skill points:</b> {initializedUnit.SkillPoints}, {initializedUnit.Exp} / {initializedUnit.ExpToNextLevel} to next skill\n";
 
         stats.text += $"<b>HP:</b> <color=red>{initializedUnit.CurrHP}</color> / <color=red>{initializedUnit.MaxHP}</color>\n";
-        stats.text += $"<b>MP:</b> <color=blue>{initializedUnit.CurrMP}</color> / <color=blue>{initializedUnit.MaxMP}</color>\n";
+        stats.text += $"<b>MP:</b> <color={ColorToHex(LightBlue)}>{initializedUnit.CurrMP}</color> / <color={ColorToHex(LightBlue)}>{initializedUnit.MaxMP}</color>\n";
 
         stats.text += $"<b>MP Regen:</b> {initializedUnit.MPRegen}\n";
 
-        stats.text += $"<b>Attack:</b> P: <color=red>{initializedUnit.PAtk}</color>  M: <color=blue>{initializedUnit.MAtk}</color>\n";
-        stats.text += $"<b>Defense:</b> P: <color=red>{initializedUnit.PDef}</color>  M: <color=blue>{initializedUnit.MDef}</color>\n";
+        stats.text += $"<b>Attack:</b> P: <color=red>{initializedUnit.PAtk}</color>  M: <color={ColorToHex(LightBlue)}>{initializedUnit.MAtk}</color>\n";
+        stats.text += $"<b>Defense:</b> P: <color=red>{initializedUnit.PDef}</color>  M: <color={ColorToHex(LightBlue)}>{initializedUnit.MDef}</color>\n";
 
         stats.text += "<b>Resistances:</b>\n";
         stats.text += $"    Fire: {initializedUnit.FireRes}%\n";
         stats.text += $"    Ice: {initializedUnit.IceRes}%\n";
     }
 
-    private void AdjustSpellSlot(Unit unit, Spell currentSpell, Button button, Image frame)
+    private void AdjustSpellSlot(Spell currentSpell, Button button, Image frame)
     {
-        Spell worseSpell = null;
-        Spell betterSpell = null;
+        string thisSpellName = currentSpell.Name;
+        string unitSpellName = GetUnitSpellName(thisSpellName);
 
-        foreach (Spell availableSpell in unit.AvailableSpells)
+        if (IsSameOrWorse(thisSpellName, unitSpellName))
         {
-            if (IsEqualOrWorse(availableSpell, currentSpell))
-            {
-                worseSpell = availableSpell;
-            }
-            else if (IsOneTierBetter(currentSpell, availableSpell))
-            {
-                betterSpell = availableSpell;
-            }
+            frame.color = LightBlue;
+            button.interactable = true;
         }
-
-        if (worseSpell != null) // Equal or worse, already learned
+        else if (IsOneTierBetter(thisSpellName, unitSpellName)) // Can be learned (one tier better)
         {
-            frame.color = Color.blue;
-            button.interactable = false;
-        }
-        else if (betterSpell != null) // One tier better, can be larned
-        {
-            if (unit.SkillPoints > 0)
+            if (initializedUnit.SkillPoints > 0)
             {
                 frame.color = Color.green;
                 button.interactable = true;
@@ -227,9 +208,10 @@ public class UpgradeSpellPanel : MonoBehaviour
                 button.interactable = false;
             }
         }
-        else if (!currentSpell.Name.EndsWith("I")) // Not on list, base tier, can be learned
+        else if (unitSpellName == null
+            && thisSpellName.Substring(thisSpellName.Length - 3).Count(c => c == 'I') == 1) // Base tier and not yet learned
         {
-            if (unit.SkillPoints > 0)
+            if (initializedUnit.SkillPoints > 0)
             {
                 frame.color = Color.green;
                 button.interactable = true;
@@ -240,42 +222,56 @@ public class UpgradeSpellPanel : MonoBehaviour
                 button.interactable = false;
             }
         }
-        else // More than one tier better, cant be learned yet
+        else // More than one tier better, cannot be learned yet
         {
             frame.color = Color.grey;
             button.interactable = false;
+            button.image.color = Color.grey;
         }
     }
 
-    private bool IsEqualOrWorse(Spell existingSpell, Spell targetSpell)
+    private bool IsOneTierBetter(string betterSpell, string spell)
     {
-        if (existingSpell.Name == targetSpell.Name) return true;
-
-        if (existingSpell.Name.StartsWith(targetSpell.Name) &&
-            existingSpell.Name.EndsWith("I") &&
-            targetSpell.Name.EndsWith("II")) return true;
-
-        return false;
+        if (betterSpell == null || spell == null) return false;
+        return spell + "I" == betterSpell;
     }
 
-    private bool IsOneTierBetter(Spell betterSpell, Spell worseSpell)
+    private bool IsSameOrWorse(string worseSpell, string spell)
     {
-        if (betterSpell.Name == worseSpell.Name + " II") return true;
-        if (betterSpell.Name == worseSpell.Name + " III" && !betterSpell.Name.EndsWith("III")) return true;
-        return false;
+        if (worseSpell == null || spell == null) return false;
+        return spell.Contains(worseSpell);
     }
 
-    private Spell GetLowerTierSpell(Spell spell)
+    private string GetUnitSpellName(string spellName)
     {
-
+        string spellNameNoTier = spellName.Substring(0, spellName.Length - 3);
+        Spell unitSpell = initializedUnit.AvailableSpells.FirstOrDefault(spell => spell.Name.Contains(spellNameNoTier));
+        string unitSpellName = unitSpell?.Name;
+        return unitSpellName;
     }
 
     private void OnSpellUpgradeClicked(Spell targetSpell)
     {
+        string unitSpellName = GetUnitSpellName(targetSpell.Name);
+        if (unitSpellName != null && IsSameOrWorse(targetSpell.Name, unitSpellName)) return;
 
-        if (initializedUnit.AvailableSpells.Contains(targetSpell))
+        UnitData unitData = saveData.playerUnits[ShownUnit];
+        unitData.SkillPoints -= 1;
+        if (unitSpellName != null)
         {
+            int index = unitData.SpellNames.IndexOf(unitSpellName);
+            unitData.SpellNames[index] = targetSpell.Name;
         }
+        else
+        {
+            unitData.SpellNames.Add(targetSpell.Name);
+        }
+        ShowForUnit();
+    }
+
+    private string ColorToHex(Color color)
+    {
+        return $"#{ColorUtility.ToHtmlStringRGB(color)}";
     }
 
 }

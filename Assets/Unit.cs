@@ -1,7 +1,5 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,6 +22,7 @@ public class Unit : MonoBehaviour
     public int Exp;
     public int ExpToNextLevel;
     public int SkillPoints;
+    public int ExpOnDeath;
 
     public List<Spell> AvailableSpells = new List<Spell>();
 
@@ -80,8 +79,9 @@ public class Unit : MonoBehaviour
         MDef = data.MDef;
 
         Exp = data.Exp;
-        ExpToNextLevel = data.ExpToNextLevel == 0 ? 50 : data.ExpToNextLevel;
+        ExpToNextLevel = data.ExpToNextLevel;
         SkillPoints = data.SkillPoints;
+        ExpOnDeath = data.ExpOnDeath == 0 ? 20 : data.ExpOnDeath;
 
         FireRes = data.FireRes;
         IceRes = data.IceRes;
@@ -285,24 +285,6 @@ public class Unit : MonoBehaviour
         {
             transform.position = Vector3.MoveTowards(transform.position, startPosition, moveSpeed * 0.5f * Time.deltaTime);
             yield return null;
-        }
-    }
-
-    public void ProcessCampfire()
-    {
-        while (Exp > ExpToNextLevel)
-        {
-            MaxHP += 50;
-            MaxMP += 20;
-            SkillPoints += 1;
-            PAtk += 5;
-            MAtk += 5;
-            PDef += 2;
-            MDef += 2;
-            FireRes += 5;
-            IceRes += 5;
-            Exp -= ExpToNextLevel;
-            ExpToNextLevel *= 2;
         }
     }
 }
