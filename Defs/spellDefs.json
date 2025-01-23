@@ -1,49 +1,112 @@
 {
     "spells": [
         {
-            "name": "Fireball",
-            "power": 50,
-            "mpCost": 30,
+            "name": "Fireball I",
+            "power": 100,
+            "mpCost": 20,
             "cooldown": 2,
             "targetingMode": "Enemy",
             "element": "Fire",
             "graphicPath": "Spells/Fireball"
         },
         {
-            "name": "Fireball2",
-            "power": 120,
-            "mpCost": 70,
-            "cooldown": 4,
+            "name": "Fireball II",
+            "power": 130,
+            "mpCost": 23,
+            "cooldown": 2,
             "targetingMode": "Enemy",
             "element": "Fire",
             "graphicPath": "Spells/Fireball2"
         },
         {
-            "name": "Fireball3",
-            "power": 200,
-            "mpCost": 100,
-            "cooldown": 5,
+            "name": "Fireball III",
+            "power": 165,
+            "mpCost": 27,
+            "cooldown": 2,
             "targetingMode": "Enemy",
             "element": "Fire",
             "graphicPath": "Spells/Fireball3"
         },
         {
-            "name": "Ice Shard",
-            "power": 40,
-            "mpCost": 25,
+            "name": "Meteor I",
+            "power": 220,
+            "mpCost": 65,
+            "cooldown": 4,
+            "targetingMode": "Enemy",
+            "element": "Fire",
+            "graphicPath": "Spells/Meteor"
+        },
+        {
+            "name": "Meteor II",
+            "power": 280,
+            "mpCost": 75,
+            "cooldown": 4,
+            "targetingMode": "Enemy",
+            "element": "Fire",
+            "graphicPath": "Spells/Meteor2"
+        },
+        {
+            "name": "Meteor III",
+            "power": 350,
+            "mpCost": 90,
+            "cooldown": 4,
+            "targetingMode": "Enemy",
+            "element": "Fire",
+            "graphicPath": "Spells/Meteor3"
+        },
+        {
+            "name": "Ice Shard I",
+            "power": 70,
+            "mpCost": 9,
             "cooldown": 2,
             "targetingMode": "Enemy",
             "element": "Ice",
             "graphicPath": "Spells/IceShard"
         },
         {
-            "name": "Ice Comet",
-            "power": 400,
-            "mpCost": 300,
-            "cooldown": 7,
+            "name": "Ice Shard II",
+            "power": 90,
+            "mpCost": 11,
+            "cooldown": 2,
+            "targetingMode": "Enemy",
+            "element": "Ice",
+            "graphicPath": "Spells/IceShard2"
+        },
+        {
+            "name": "Ice Shard III",
+            "power": 115,
+            "mpCost": 14,
+            "cooldown": 2,
+            "targetingMode": "Enemy",
+            "element": "Ice",
+            "graphicPath": "Spells/IceShard3"
+        },
+        {
+            "name": "Ice Comet I",
+            "power": 250,
+            "mpCost": 70,
+            "cooldown": 6,
             "targetingMode": "Enemy",
             "element": "Ice",
             "graphicPath": "Spells/IceComet"
+        },
+        {
+            "name": "Ice Comet II",
+            "power": 320,
+            "mpCost": 80,
+            "cooldown": 6,
+            "targetingMode": "Enemy",
+            "element": "Ice",
+            "graphicPath": "Spells/IceComet2"
+        },
+        {
+            "name": "Ice Comet III",
+            "power": 400,
+            "mpCost": 95,
+            "cooldown": 6,
+            "targetingMode": "Enemy",
+            "element": "Ice",
+            "graphicPath": "Spells/IceComet3"
         },
         {
             "name": "Heal",
@@ -65,7 +128,7 @@
         },
         {
             "name": "Bite",
-            "power": 20,
+            "power": 90,
             "mpCost": 0,
             "cooldown": 1,
             "targetingMode": "Enemy",
@@ -74,7 +137,7 @@
         },
         {
             "name": "Pounce",
-            "power": 60,
+            "power": 130,
             "mpCost": 20,
             "cooldown": 3,
             "targetingMode": "Enemy",
@@ -83,7 +146,7 @@
         },
         {
             "name": "Scratch",
-            "power": 50,
+            "power": 110,
             "mpCost": 10,
             "cooldown": 2,
             "targetingMode": "Enemy",
@@ -92,7 +155,7 @@
         },
         {
             "name": "Charge",
-            "power": 70,
+            "power": 150,
             "mpCost": 30,
             "cooldown": 3,
             "targetingMode": "Enemy",

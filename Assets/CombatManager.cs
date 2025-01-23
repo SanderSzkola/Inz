@@ -29,7 +29,7 @@ public class CombatManager : MonoBehaviour
     private Spell selectedSpell = null; // spell to execute
 
     public SpellPanel spellPanel;
-    private List<Spell> spells;
+    private Dictionary<string, Spell> spells;
 
     private MessageLog messageLog;
     private int turnNumber = 1;
@@ -376,8 +376,8 @@ public class CombatManager : MonoBehaviour
             UnitData unitData = SaveFileData.playerUnits.FirstOrDefault(data => data.Name == unit.unitName);
             if (unitData != null)
             {
-                unitData.CurrHP = unit.currHP;
-                unitData.CurrMP = unit.currMP;
+                unitData.CurrHP = unit.CurrHP;
+                unitData.CurrMP = unit.CurrMP;
             }
         }
     }

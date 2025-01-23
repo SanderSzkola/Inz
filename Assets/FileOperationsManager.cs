@@ -14,7 +14,7 @@ public class FileOperationsManager : MonoBehaviour
     private SaveFileData SaveData;
     private Dictionary<string, UnitData> enemyDefsCache;
     private List<string> levelDefsCache;
-    private List<Spell> spellDefsCache;
+    private Dictionary<string, Spell> spellDefsCache;
     private Dictionary<EncounterType, Sprite> mapSprites;
 
     private readonly string newGameSaveFilePath = "Defs/newGameSaveFile.json";
@@ -124,11 +124,11 @@ public class FileOperationsManager : MonoBehaviour
         return levelDefsCache;
     }
 
-    public List<Spell> LoadSpellDefs()
+    public Dictionary<string, Spell> LoadSpellDefs()
     {
         if (spellDefsCache == null)
         {
-            spellDefsCache = new List<Spell>();
+            spellDefsCache = new Dictionary<string, Spell>();
             string json = File.ReadAllText(spellDefsFilePath);
             List<SpellData> spellDataList = JsonUtility.FromJson<SpellDataList>(json).spells;
 
@@ -144,7 +144,7 @@ public class FileOperationsManager : MonoBehaviour
                 Spell spell = CreateSpell(data, graphic);
                 if (spell != null)
                 {
-                    spellDefsCache.Add(spell);
+                    spellDefsCache[data.name] = spell; // Add to dictionary with spell.Name as key
                 }
             }
         }

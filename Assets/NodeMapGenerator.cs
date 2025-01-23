@@ -216,7 +216,6 @@ public class NodeMapGenerator : MonoBehaviour
         }
     }
 
-
     public MapData GetMapData()
     {
         if (Map == null)

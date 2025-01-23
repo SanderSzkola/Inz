@@ -25,10 +25,14 @@ public class UnitData
     public int MAtk;
     public int MDef;
 
+    public int Exp;
+    public int ExpToNextLevel;
+    public int SkillPoints;
+
     public int FireRes;
     public int IceRes;
 
-    public string SpellNames;
+    public List<string> SpellNames = new List<string>();
 
     // Graphics
     public float maskRed;

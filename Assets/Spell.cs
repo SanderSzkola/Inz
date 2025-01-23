@@ -70,7 +70,7 @@ public abstract class Spell
         return (Spell)this.MemberwiseClone();
     }
 
-    protected string getUnitColoring(Unit unit)
+    protected string GetUnitColoring(Unit unit)
     {
         if (unit == null) return "<color=white>";
         if (unit.isPlayerUnit) return "<color=green>";
@@ -89,13 +89,13 @@ public class AttackSpell : Spell
     public override void Execute(Unit caster, Unit target, MessageLog messageLog)
     {
         base.Execute(caster, target, messageLog);
-        int baseDamage = Element == Element.None ? caster.pAtk : caster.mAtk;
-        int targetDefense = Element == Element.None ? target.pDef : target.mDef;
-        int resistance = target.GetResistance(Element);
+        int unitPower = Element == Element.None ? caster.PAtk : caster.MAtk;
+        int targetDefense = Element == Element.None ? target.PDef : target.MDef;
+        float resistance = target.GetResistance(Element) / 100f;
 
-        int damage = Mathf.Max((Power + baseDamage - targetDefense) - resistance, 0);
+        int damage = (int)Mathf.Max((Power / 100f * unitPower) * (1f - resistance) - targetDefense, 0);
 
-        messageLog.AddMessage($"{getUnitColoring(caster)}{caster.unitName}</color> cast {Name} on {getUnitColoring(target)}{target.unitName}</color> for <color=red>{damage}</color> damage.");
+        messageLog.AddMessage($"{GetUnitColoring(caster)}{caster.unitName}</color> cast {Name} on {GetUnitColoring(target)}{target.unitName}</color> dealing <color=red>{damage}</color> damage.");
         target.ApplyDamage(damage);
 
         StartCooldown();
@@ -114,7 +114,7 @@ public class RestoreSpell : Spell
     public override void Execute(Unit caster, Unit target, MessageLog messageLog)
     {
         base.Execute(caster, target, messageLog);
-        messageLog.AddMessage($"{getUnitColoring(caster)}{caster.unitName}</color> restored <color=blue>{Power}</color> MP.");
+        messageLog.AddMessage($"{GetUnitColoring(caster)}{caster.unitName}</color> restored <color=blue>{Power}</color> MP.");
         caster.ChangeMPBy(Power);
 
         StartCooldown();

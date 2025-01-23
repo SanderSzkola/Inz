@@ -11,20 +11,24 @@ public class Unit : MonoBehaviour
     public bool canAct = true;
     public bool isPlayerUnit = false;
 
-    public int maxHP;
-    public int currHP;
-    public int maxMP;
-    public int currMP;
-    public int mpRegen;
-    public int pAtk;
-    public int pDef;
-    public int mAtk;
-    public int mDef;
+    public int MaxHP;
+    public int CurrHP;
+    public int MaxMP;
+    public int CurrMP;
+    public int MPRegen;
+    public int PAtk;
+    public int PDef;
+    public int MAtk;
+    public int MDef;
+
+    public int Exp;
+    public int ExpToNextLevel;
+    public int SkillPoints;
 
     public List<Spell> AvailableSpells = new List<Spell>();
 
-    public int fireRes;
-    public int iceRes;
+    public int FireRes;
+    public int IceRes;
 
     public GameObject statusPanel;
     private GameObject selectionIndicator;
@@ -49,44 +53,38 @@ public class Unit : MonoBehaviour
     public float SpriteWidth;
     public float SpriteHeight;
 
-    public void InitializeFromPrefab(CombatManager manager, List<Spell> globalSpellList, GameObject selectionIndicator, UnitData data)
+    public void InitializeFromPrefab(CombatManager manager, Dictionary<string, Spell> globalSpellDict, GameObject selectionIndicator, UnitData data)
     {
         combatManager = manager;
-        InitializeFromData(data, globalSpellList);
+        InitializeFromData(data, globalSpellDict);
 
         this.selectionIndicator = selectionIndicator;
         this.selectionIndicator.SetActive(false);
         RefreshSelectorColor();
-
-        // only for player unit
-        Transform maskTransform = transform.Find("mage/mask");
-        if (maskTransform != null)
-        {
-            maskSpriteRenderer = maskTransform.GetComponent<SpriteRenderer>();
-            if (maskSpriteRenderer != null)
-            {
-                ApplyMask();
-            }
-        }
+        ApplyMask();
     }
 
-    public void InitializeFromData(UnitData data, List<Spell> globalSpellList)
+    public void InitializeFromData(UnitData data, Dictionary<string, Spell> globalSpellDict)
     {
         unitName = data.Name;
         isPlayerUnit = data.IsPlayerUnit;
 
-        maxHP = data.MaxHP;
-        currHP = data.CurrHP;
-        maxMP = data.MaxMP;
-        currMP = data.CurrMP;
-        mpRegen = data.MPRegen;
-        pAtk = data.PAtk;
-        pDef = data.PDef;
-        mAtk = data.MAtk;
-        mDef = data.MDef;
+        MaxHP = data.MaxHP;
+        CurrHP = data.CurrHP;
+        MaxMP = data.MaxMP;
+        CurrMP = data.CurrMP;
+        MPRegen = data.MPRegen;
+        PAtk = data.PAtk;
+        PDef = data.PDef;
+        MAtk = data.MAtk;
+        MDef = data.MDef;
 
-        fireRes = data.FireRes;
-        iceRes = data.IceRes;
+        Exp = data.Exp;
+        ExpToNextLevel = data.ExpToNextLevel == 0 ? 50 : data.ExpToNextLevel;
+        SkillPoints = data.SkillPoints;
+
+        FireRes = data.FireRes;
+        IceRes = data.IceRes;
 
         maskRed = data.maskRed;
         maskGreen = data.maskGreen;
@@ -103,38 +101,40 @@ public class Unit : MonoBehaviour
         SpriteHeight = data.SpriteHeight;
 
         AvailableSpells.Clear();
-        if (data.SpellNames == null)
+        if (data.SpellNames == null || data.SpellNames.Count == 0)
         {
             Debug.LogError($"Unit '{unitName}' has no spells.");
             return;
         }
-        string[] spellNames = data.SpellNames.Split(',');
-        foreach (string spellName in spellNames)
+
+        foreach (string spellName in data.SpellNames)
         {
             string trimmedName = spellName.Trim();
-            Spell matchingSpell = globalSpellList.FirstOrDefault(spell => spell.Name.Equals(trimmedName, StringComparison.OrdinalIgnoreCase));
-            if (matchingSpell != null)
+            if (globalSpellDict.TryGetValue(trimmedName, out Spell matchingSpell))
             {
                 AvailableSpells.Add(matchingSpell.Clone());
             }
             else
             {
-                Debug.LogWarning($"Spell '{trimmedName}' not found in global spell list for unit {data.Name}.");
+                Debug.LogWarning($"Spell '{trimmedName}' not found in global spell dictionary for unit {data.Name}.");
             }
         }
     }
 
-    private void ApplyMask()
+
+    public void ApplyMask()
     {
-        // Apply mask color based on the Unit parameters
-        if (maskRed == 1f && maskGreen == 1f && maskBlue == 1f) // default detected, randomize
+        // only for player unit
+        Transform maskTransform = transform.Find("mage/mask");
+        if (maskTransform != null)
         {
-            maskRed = UnityEngine.Random.Range(0f, 1f);
-            maskGreen = UnityEngine.Random.Range(0f, 1f);
-            maskBlue = UnityEngine.Random.Range(0f, 1f);
+            maskSpriteRenderer = maskTransform.GetComponent<SpriteRenderer>();
+            if (maskSpriteRenderer != null)
+            {
+                Color maskColor = new Color(maskRed, maskGreen, maskBlue, 1f);
+                maskSpriteRenderer.color = maskColor;
+            }
         }
-        Color maskColor = new Color(maskRed, maskGreen, maskBlue, 1f);
-        maskSpriteRenderer.color = maskColor;
     }
 
     public void RefreshSelectorColor()
@@ -167,34 +167,34 @@ public class Unit : MonoBehaviour
             hpSlider = statusPanel.transform.Find("HPBar").GetComponent<Slider>();
             mpSlider = statusPanel.transform.Find("MPBar").GetComponent<Slider>();
         }
-        hpSlider.value = (float)currHP / maxHP;
-        mpSlider.value = (float)currMP / maxMP;
+        hpSlider.value = (float)CurrHP / MaxHP;
+        mpSlider.value = (float)CurrMP / MaxMP;
     }
 
     public void ChangeHPBy(int value)
     {
-        currHP += value;
-        currHP = Mathf.Clamp(currHP, 0, maxHP); // Prevent overflow or underflow.
+        CurrHP += value;
+        CurrHP = Mathf.Clamp(CurrHP, 0, MaxHP); // Prevent overflow or underflow.
         UpdateStatusPanel();
     }
 
     public void ChangeMPBy(int value)
     {
-        currMP += value;
-        currMP = Mathf.Clamp(currMP, 0, maxMP);
+        CurrMP += value;
+        CurrMP = Mathf.Clamp(CurrMP, 0, MaxMP);
         UpdateStatusPanel();
     }
 
     public int GetResistance(Element element) // where is my dict :(
     {
-        if (element == Element.Fire) return fireRes;
-        if (element == Element.Ice) return iceRes;
+        if (element == Element.Fire) return FireRes;
+        if (element == Element.Ice) return IceRes;
         return 0;
     }
 
     public bool CanAffordCast(int value)
     {
-        return currMP >= value;
+        return CurrMP >= value;
     }
 
     public void ApplyDamage(int damage)
@@ -213,7 +213,10 @@ public class Unit : MonoBehaviour
 
     void OnMouseDown()
     {
-        combatManager.SelectUnit(this);
+        if (combatManager != null)
+        {
+            combatManager.SelectUnit(this);
+        }
     }
 
     public void RefreshSelection(Unit activePlayerUnit, Unit targetUnit)
@@ -236,7 +239,7 @@ public class Unit : MonoBehaviour
         {
             spell.ReduceCooldown();
         }
-        ChangeMPBy(mpRegen);
+        ChangeMPBy(MPRegen);
     }
 
     public IEnumerator TakeDamageAnim(float duration = 0.3f, float intensity = 1f)
@@ -256,7 +259,7 @@ public class Unit : MonoBehaviour
         transform.position = originalPosition;
 
         // Logic that needs to happen AFTER animation or it errors
-        if (currHP <= 0)
+        if (CurrHP <= 0)
         {
             canAct = false;
             Die();
@@ -285,4 +288,21 @@ public class Unit : MonoBehaviour
         }
     }
 
+    public void ProcessCampfire()
+    {
+        while (Exp > ExpToNextLevel)
+        {
+            MaxHP += 50;
+            MaxMP += 20;
+            SkillPoints += 1;
+            PAtk += 5;
+            MAtk += 5;
+            PDef += 2;
+            MDef += 2;
+            FireRes += 5;
+            IceRes += 5;
+            Exp -= ExpToNextLevel;
+            ExpToNextLevel *= 2;
+        }
+    }
 }
