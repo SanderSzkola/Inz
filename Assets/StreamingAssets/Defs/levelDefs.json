@@ -1,0 +1,14 @@
+{
+    "levelDefs": [
+        { "levelVariations": ["Fox"] },
+        { "levelVariations": ["Fox,Fox", "Boar", "Wolf"] },
+        { "levelVariations": ["Fox,Boar", "Boar,Boar", "Fox,Wolf"] },
+        { "levelVariations": ["Fox,Boar,Fox", "Wolf,Boar", "Wolf,Wolf"] },
+        { "levelVariations": ["Fox_Fire,Fox_Ice", "Fox_Ice,Fox_Fire", "Boar,Fox,Boar", "Fox,Fox,Fox,Fox"] },
+        { "levelVariations": ["Wolf_Fire,Fox_Fire", "Fox_Ice,Wolf_Ice", "Wolf_Fire,Fox_Fire", "Fox_Ice,Wolf_Ice", "Wolf,Boar,Fox_Fire", "Boar,Wolf,Boar"] },
+        { "levelVariations": ["Fox_Fire,Wolf,Fox_Fire", "Fox_Ice,Wolf,Fox_Ice", "Bear,Boar", "Fox_Fire,Fox_Ice,Boar"] },
+        { "levelVariations": ["Wolf_Fire,Bear,Fox_Fire", "Wolf_Ice,Bear,Fox_Ice", "Wolf,Wolf,Bear", "Fox_Fire,Bear,Fox_Ice", "Bear,Bear"] },
+        { "levelVariations": ["Bear,Boar,Bear", "Wolf_Fire,Bear,Wolf_Ice", "Bear,Wolf_Fire,Bear", "Wolf_Ice,Bear,Wolf_Ice"] },
+        { "levelVariations": ["Wendigo"]}
+    ]
+}

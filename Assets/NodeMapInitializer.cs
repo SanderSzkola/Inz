@@ -6,6 +6,7 @@ public class NodeMapInitializer : MonoBehaviour
 {
     public Button ButtonPrefab;
     public Transform MapGameObject;
+    private float BossScale = 6f;
 
     void Start()
     {
@@ -14,11 +15,11 @@ public class NodeMapInitializer : MonoBehaviour
 
     void FillMap()
     {
-        RectTransform mapRect = MapGameObject.GetComponent<RectTransform>();
         Dictionary<MapNode, Button> nodeToButtonMap = new Dictionary<MapNode, Button>();
         Dictionary<EncounterType, Sprite> sprites = FileOperationsManager.Instance.LoadMapSprites();
         int maxRows = NodeMapGenerator.Instance.FloorWidth;
-        int maxCols = NodeMapGenerator.Instance.NumFloors + 2; // space for boss
+        int maxCols = NodeMapGenerator.Instance.NumFloors + 2; // extra space for big boss icon
+        RectTransform mapRect = MapGameObject.GetComponent<RectTransform>();
         float usableWidth = mapRect.rect.width * 0.9f;
         float usableHeight = mapRect.rect.height * 0.8f;
         float marginX = mapRect.rect.width * 0.1f;
@@ -38,6 +39,12 @@ public class NodeMapInitializer : MonoBehaviour
                 Button button = Instantiate(ButtonPrefab, MapGameObject);
                 RectTransform buttonRect = button.GetComponent<RectTransform>();
                 buttonRect.anchoredPosition = new Vector2(xPosition, yPosition);
+
+                // Check if the node is the boss node
+                if (node.EncounterType == EncounterType.BOSS)
+                {
+                    buttonRect.localScale = new Vector3(BossScale, BossScale, 1);
+                }
 
                 nodeToButtonMap[node] = button;
                 NodeButton nodeButton = button.GetComponent<NodeButton>();
@@ -74,6 +81,10 @@ public class NodeMapInitializer : MonoBehaviour
                 Vector3 direction = (endCenter - startCenter).normalized;
                 float startRadius = Mathf.Min(startButtonRect.rect.width, startButtonRect.rect.height) / 2.2f;
                 float endRadius = Mathf.Min(endButtonRect.rect.width, endButtonRect.rect.height) / 2.2f;
+                if (node.EncounterType == EncounterType.BOSS)
+                {
+                    endRadius *= BossScale;
+                }
 
                 Vector3 adjustedStart = startCenter + direction * startRadius;
                 Vector3 adjustedEnd = endCenter - direction * endRadius;

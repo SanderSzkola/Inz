@@ -11,7 +11,6 @@ public class MapNode
     public NodeButton NodeButton { get; set; }
     public bool IsPlayerHere { get; set; }
 
-
     public EncounterType EncounterType { get; set; }
 
     public MapNode(int x, int y, string encounterTypeString, bool isPlayerHere)

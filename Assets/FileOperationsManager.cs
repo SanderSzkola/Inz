@@ -13,14 +13,14 @@ public class FileOperationsManager : MonoBehaviour
 
     private SaveFileData SaveData;
     private Dictionary<string, UnitData> enemyDefsCache;
-    private List<string> levelDefsCache;
+    private List<LevelVariationsList> levelDefsCache;
     private Dictionary<string, Spell> spellDefsCache;
     private Dictionary<EncounterType, Sprite> mapSprites;
 
-    private readonly string newGameSaveFilePath = "Defs/newGameSaveFile.json";
-    private readonly string enemyDefsFilePath = "Defs/enemyDefs.json";
-    private readonly string levelDefsFilePath = "Defs/levelDefs.json";
-    private readonly string spellDefsFilePath = "Defs/spellDefs.json";
+    private readonly string newGameSaveFilePath = Path.Combine(Application.streamingAssetsPath, "Defs/newGameSaveFile.json");
+    private readonly string enemyDefsFilePath = Path.Combine(Application.streamingAssetsPath, "Defs/enemyDefs.json");
+    private readonly string levelDefsFilePath = Path.Combine(Application.streamingAssetsPath, "Defs/levelDefs.json");
+    private readonly string spellDefsFilePath = Path.Combine(Application.streamingAssetsPath, "Defs/spellDefs.json");
     private readonly string mapSpritesFilePath = "MapSpritesWhite";
 
     private void Awake()
@@ -38,20 +38,19 @@ public class FileOperationsManager : MonoBehaviour
 
     public void SetUpNewGame(int num)
     {
+        SaveData = null;
         SaveSlot = num;
         SaveFilePath = newGameSaveFilePath;
         NodeMapGenerator.Instance.LoadMapFromData(LoadSaveData().mapData);
-
-        //SceneManager.LoadScene("BattleScene");
         SceneManager.LoadScene("MapScene");
     }
 
     private string GetSavePath(int num)
     {
         // thats how normal save path would look like
-        // return Path.Combine(Application.persistentDataPath, $"Saves/{num}.json");
+        return Path.Combine(Application.persistentDataPath, $"Saves/{num}.json");
         // thats how it look like if i want it in project folder
-        return $"Saves/{num}.json";
+        // return $"Saves/{num}.json";
     }
 
     public bool DoesSaveExist(int num)
@@ -70,8 +69,23 @@ public class FileOperationsManager : MonoBehaviour
         return "No Save";
     }
 
+    public int GetRandomSeedFromSave()
+    {
+        string path = GetSavePath(SaveSlot);
+        if (File.Exists(path))
+        {
+            DateTime creationTime = File.GetLastWriteTime(path);
+            return creationTime.Hour * 10000 + creationTime.Minute * 100 + creationTime.Second;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
     public void LoadGame(int num)
     {
+        SaveData = null;
         SaveSlot = num;
         SaveFilePath = GetSavePath(SaveSlot);
         NodeMapGenerator.Instance.LoadMapFromData(LoadSaveData().mapData);
@@ -80,19 +94,27 @@ public class FileOperationsManager : MonoBehaviour
 
     public void SaveGame(SaveFileData saveFileData)
     {
+        // Ensure folder exists, otherwise will throw error on first run 
         SaveFilePath = GetSavePath(SaveSlot);
+        string directoryPath = Path.GetDirectoryName(SaveFilePath);
+        if (!Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
+
         saveFileData.mapData = NodeMapGenerator.Instance.GetMapData();
         string json = JsonUtility.ToJson(saveFileData, true);
         File.WriteAllText(SaveFilePath, json);
-        SaveData = null;
     }
+
+    public void SaveGame() { SaveGame(SaveData); }
 
     public void DeleteSave(int num)
     {
         File.Delete(GetSavePath(num));
     }
 
-    public SaveFileData LoadSaveData() 
+    public SaveFileData LoadSaveData()
     {
         if (SaveData == null)
         {
@@ -113,13 +135,13 @@ public class FileOperationsManager : MonoBehaviour
         return enemyDefsCache;
     }
 
-    public List<string> LoadLevelDefs()
+    public List<LevelVariationsList> LoadLevelDefs()
     {
         if (levelDefsCache == null)
         {
             string json = File.ReadAllText(levelDefsFilePath);
             LevelDefsList levelDefsList = JsonUtility.FromJson<LevelDefsList>(json);
-            levelDefsCache = new List<string>(levelDefsList.levelDefs);
+            levelDefsCache = levelDefsList.levelDefs;
         }
         return levelDefsCache;
     }
@@ -172,30 +194,28 @@ public class FileOperationsManager : MonoBehaviour
                 return null;
         }
     }
-public Dictionary<EncounterType, Sprite> LoadMapSprites()
-{
-    if (mapSprites == null)
+    public Dictionary<EncounterType, Sprite> LoadMapSprites()
     {
-        mapSprites = new Dictionary<EncounterType, Sprite>();
-
-        Sprite[] sprites = Resources.LoadAll<Sprite>(mapSpritesFilePath);
-        foreach (Sprite sprite in sprites)
+        if (mapSprites == null)
         {
-            if (Enum.TryParse(sprite.name, true, out EncounterType encounterType))
+            mapSprites = new Dictionary<EncounterType, Sprite>();
+
+            Sprite[] sprites = Resources.LoadAll<Sprite>(mapSpritesFilePath);
+            foreach (Sprite sprite in sprites)
             {
-                if (!mapSprites.ContainsKey(encounterType))
+                if (Enum.TryParse(sprite.name, true, out EncounterType encounterType))
                 {
-                    mapSprites.Add(encounterType, sprite);
+                    if (!mapSprites.ContainsKey(encounterType))
+                    {
+                        mapSprites.Add(encounterType, sprite);
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"Sprite name '{sprite.name}' does not match any EncounterType.");
                 }
             }
-            else
-            {
-                Debug.LogWarning($"Sprite name '{sprite.name}' does not match any EncounterType.");
-            }
         }
+        return mapSprites;
     }
-
-    return mapSprites;
-}
-
 }

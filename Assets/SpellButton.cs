@@ -1,9 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.EventSystems;
 using System.Collections;
-using System.IO;
 
 public class SpellButton : MonoBehaviour
 {
@@ -15,6 +13,10 @@ public class SpellButton : MonoBehaviour
     private TextMeshProUGUI buttonText;
     private Transform frameTransform;
     private Transform coverTransform;
+
+    private Coroutine showDetailsCoroutine;
+    private Coroutine hideDetailsCoroutine;
+    private readonly float delay = 0.2f;
 
     private void Awake()
     {
@@ -49,7 +51,6 @@ public class SpellButton : MonoBehaviour
     {
         if (spell == null || coverTransform == null) return;
 
-        // Add hover functionality
         var eventTrigger = gameObject.AddComponent<UnityEngine.EventSystems.EventTrigger>();
 
         var entryEnter = new UnityEngine.EventSystems.EventTrigger.Entry
@@ -72,6 +73,18 @@ public class SpellButton : MonoBehaviour
     {
         if (coverTransform == null || buttonText == null) return;
 
+        if (hideDetailsCoroutine != null)
+        {
+            StopCoroutine(hideDetailsCoroutine);
+            hideDetailsCoroutine = null;
+        }
+
+        showDetailsCoroutine = StartCoroutine(ShowDetailsWithDelay());
+    }
+
+    private IEnumerator ShowDetailsWithDelay()
+    {
+        yield return new WaitForSeconds(delay);
         coverTransform.gameObject.SetActive(true);
         buttonText.fontSize = 1.5f;
         buttonText.text = spell.Description();
@@ -81,6 +94,18 @@ public class SpellButton : MonoBehaviour
     {
         if (coverTransform == null || buttonText == null) return;
 
+        if (showDetailsCoroutine != null)
+        {
+            StopCoroutine(showDetailsCoroutine);
+            showDetailsCoroutine = null;
+        }
+
+        hideDetailsCoroutine = StartCoroutine(HideDetailsWithDelay());
+    }
+
+    private IEnumerator HideDetailsWithDelay()
+    {
+        yield return new WaitForSeconds(delay / 2);
         coverTransform.gameObject.SetActive(false);
         if (spell != null && spell.RemainingCooldown > 0)
         {

@@ -47,20 +47,19 @@ public abstract class Spell
 
     public void ReduceCooldown() => remainingCooldown = Mathf.Max(remainingCooldown - 1, 0);
 
-    public virtual void Execute(Unit caster, Unit target, MessageLog messageLog)
+    public virtual bool Execute(Unit caster, Unit target, MessageLog messageLog)
     {
-        if (!IsReady()) return;
-
+        if (!IsReady()) return false;
         if (!caster.CanAffordCast(MPCost))
         {
             if (caster.isPlayerUnit)
             {
                 messageLog.AddTemporaryMessage($"<color=blue>Not enough MP to cast {Name}.</color>");
             }
-            return;
+            return false;
         }
-
         caster.ChangeMPBy(MPCost * -1);
+        return true;
     }
 
     public bool IsOnCooldown() => remainingCooldown > 0;
@@ -91,9 +90,9 @@ public class AttackSpell : Spell
         // If VariantSpell had something unique that is not in baseSpell it would be here, todo?
     }
 
-    public override void Execute(Unit caster, Unit target, MessageLog messageLog)
+    public override bool Execute(Unit caster, Unit target, MessageLog messageLog)
     {
-        base.Execute(caster, target, messageLog);
+        if (!base.Execute(caster, target, messageLog)) return false;
         int unitPower = Element == Element.None ? caster.PAtk : caster.MAtk;
         int targetDefense = Element == Element.None ? target.PDef : target.MDef;
         float resistance = target.GetResistance(Element) / 100f;
@@ -105,6 +104,7 @@ public class AttackSpell : Spell
 
         StartCooldown();
         caster.canAct = false;
+        return true;
     }
 
     public override string Description()
@@ -128,14 +128,15 @@ public class RestoreSpell : Spell
         // If VariantSpell had something unique that is not in baseSpell it would be here, todo?
     }
 
-    public override void Execute(Unit caster, Unit target, MessageLog messageLog)
+    public override bool Execute(Unit caster, Unit target, MessageLog messageLog)
     {
-        base.Execute(caster, target, messageLog);
+        if (!base.Execute(caster, target, messageLog)) return false;
         messageLog.AddMessage($"{GetUnitColoring(caster)}{caster.unitName}</color> restored <color=blue>{Power}</color> MP.");
         caster.ChangeMPBy(Power);
 
         StartCooldown();
         caster.canAct = false;
+        return true;
     }
     public override string Description()
     {

@@ -35,9 +35,11 @@ public class CombatManager : MonoBehaviour
     private int turnNumber = 1;
 
     private Dictionary<string, UnitData> enemyDefs;
-    private List<string> levelDefs;
-
     private SaveFileData SaveFileData;
+
+    private DialogWindowManager DialogWindowManager;
+    private int totalExp = 0;
+    private bool victory;
 
     void Start()
     {
@@ -52,26 +54,43 @@ public class CombatManager : MonoBehaviour
 
         foreach (var playerUnit in playerData)
         {
-            SpawnUnit(playerPrefab, playerStatusPanel, playerPosition, playerUnits, new Vector2(1, 1), playerData.Count, playerData.IndexOf(playerUnit), playerUnit);
+            SpawnUnit(playerPrefab,
+                playerStatusPanel,
+                playerPosition,
+                playerUnits,
+                new Vector2(1, 1),
+                playerData.Count,
+                playerData.IndexOf(playerUnit),
+                playerUnit);
         }
 
         // Load enemy and level definitions
         enemyDefs = FileOperationsManager.Instance.LoadEnemyDefs();
-        levelDefs = FileOperationsManager.Instance.LoadLevelDefs();
+        List<LevelVariationsList> levelDefs = FileOperationsManager.Instance.LoadLevelDefs();
 
         // Prepare enemies for the current level
-        List<UnitData> enemyData = PrepareEnemiesForLevel(levelDefs[NodeMapGenerator.Instance.CurrentFloor]);
+        MapNode node = NodeMapGenerator.Instance.CurrentNode;
+        int currentLevel = node.EncounterType == EncounterType.HARDBATTLE ? node.X + 2 : node.X;
+        currentLevel = Mathf.Min(currentLevel, levelDefs.Count - 2);
+        if (node.EncounterType == EncounterType.BOSS) currentLevel = levelDefs.Count - 1;
+        Random.InitState(FileOperationsManager.Instance.GetRandomSeedFromSave() + currentLevel); // constant seed to make loading previous save deterministic
+        List<UnitData> enemyData = PrepareEnemiesForLevel(levelDefs[currentLevel]);
 
         for (int i = 0; i < enemyData.Count; i++)
         {
-            SpawnUnit(enemyPrefab, enemyStatusPanel, enemyPosition, enemyUnits, new Vector2(-1, 1), enemyData.Count, i, enemyData[i]);
+            SpawnUnit(enemyPrefab,
+                enemyStatusPanel,
+                enemyPosition,
+                enemyUnits,
+                new Vector2(-1, 1),
+                enemyData.Count,
+                i,
+                enemyData[i]);
         }
 
         turnState = TurnState.PLAYER;
-        activePlayerUnit = playerUnits.Count > 0 ? playerUnits[0] : null;
-        RefreshUnitSelections();
+        SelectUnit(playerUnits[0]);
 
-        messageLog.AddMessage($"<color=red>DEBUG:</color>Loading level {NodeMapGenerator.Instance.CurrentFloor}");
         messageLog.AddMessage($"Starting turn {turnNumber}.");
     }
 
@@ -82,19 +101,20 @@ public class CombatManager : MonoBehaviour
             StartCoroutine(HandleEnemyTurn());
         }
     }
-    private List<UnitData> PrepareEnemiesForLevel(string levelConfig)
+    private List<UnitData> PrepareEnemiesForLevel(LevelVariationsList levelDef)
     {
         List<UnitData> enemyData = new List<UnitData>();
-        foreach (string enemyType in levelConfig.Split(','))
+        string levelVariation = levelDef.levelVariations[Random.Range(0, levelDef.levelVariations.Count)];
+        foreach (string enemyType in levelVariation.Split(','))
         {
-            string trimmedType = enemyType.Trim();
-            if (enemyDefs.TryGetValue(trimmedType, out UnitData enemyUnitData))
+            string type = enemyType.Trim();
+            if (enemyDefs.TryGetValue(type, out UnitData enemyUnitData))
             {
                 enemyData.Add(enemyUnitData);
             }
             else
             {
-                Debug.LogError($"Enemy type '{trimmedType}' not in enemyDefs");
+                Debug.LogError($"Enemy type '{type}' not in enemyDefs");
             }
         }
         return enemyData;
@@ -106,9 +126,10 @@ public class CombatManager : MonoBehaviour
 
         // Space units evenly based on count and direction
         float maxYDistance = 25f;
-        float yInterval = (count > 1) ? maxYDistance / (count - 1) : 0;
+        float yInterval = (count > 1) ? maxYDistance / (count - 1) : maxYDistance / 2;
         float xOffsetPerUnit = 18f;
 
+        if (count == 1) positionNum = 1; // one enemy, spawn it at center 
         float yPosition = position.position.y + positionNum * yInterval * direction.y;
         float xPosition = position.position.x + positionNum * xOffsetPerUnit * direction.x;
         Vector3 spawnPosition = new Vector3(xPosition, yPosition, 0);
@@ -129,7 +150,7 @@ public class CombatManager : MonoBehaviour
             if (spriteRenderer != null)
             {
                 spriteRenderer.sortingOrder = 100 - 1 * positionNum;
-                string spritePath = $"Sprites/{unitData.Name}";
+                string spritePath = $"UnitSprites/{unitData.Name}";
                 Sprite sprite = Resources.Load<Sprite>(spritePath);
                 if (sprite != null)
                 {
@@ -201,20 +222,17 @@ public class CombatManager : MonoBehaviour
 
         if (targetUnit != null)
         {
-            // try casting spell
-            // Debug.Log("Active unit: " + activePlayerUnit.unitName + ", target unit: " + targetUnit.unitName + ", selected spell: " + selectedSpell.Name);
             CastSpell(selectedSpell);
 
             spellPanel.RefreshSpellSelection(null, activePlayerUnit.canAct);
             selectedSpell = null;
             targetUnit = null;
 
-            // if there was animation, this would be good point to wait for it to finish
             RefreshUnitSelections();
             return;
         }
 
-        // if this place was reached - wrong target was clicked - probably to select another activePlayerUnit
+        // if this place was reached - wrong target for spell was clicked - probably to select another activePlayerUnit
         if (unit.isPlayerUnit)
         {
             activePlayerUnit = unit;
@@ -262,12 +280,13 @@ public class CombatManager : MonoBehaviour
         }
         else if (enemyUnits.Contains(unit))
         {
-            messageLog.AddMessage($"<color=yellow>{unit.unitName} has been defeated.</color>");
-            foreach(Unit playerUnit in playerUnits)
+            messageLog.AddMessage($"<color=yellow>{unit.unitName} has been defeated.</color> All units gained {unit.ExpOnDeath} exp. ");
+            foreach (Unit playerUnit in playerUnits)
             {
                 playerUnit.Exp += unit.ExpOnDeath;
             }
             enemyUnits.Remove(unit);
+            totalExp += unit.ExpOnDeath;
         }
 
         CheckBattleEndConditions();
@@ -289,15 +308,13 @@ public class CombatManager : MonoBehaviour
     {
         if (playerUnits.Count == 0)
         {
-            Debug.Log("All player units have been defeated. Game Over!");
-            // Trigger defeat logic
+            victory = false;
+            ShowDialogWindow();
         }
         else if (enemyUnits.Count == 0)
         {
-            PrepareDataToSave();
-            FileOperationsManager.Instance.SaveGame(SaveFileData);
-            CleanupBeforeSceneLoad();
-            SceneManager.LoadScene("MapScene");
+            victory = true;
+            ShowDialogWindow();
         }
     }
 
@@ -327,7 +344,6 @@ public class CombatManager : MonoBehaviour
                 yield return new WaitForSeconds(0.5f);
             }
             RefreshUnitSelections();
-            CheckBattleEndConditions();
             if (playerUnits.Count == 0 || enemyUnits.Count == 0)
             {
                 yield break;
@@ -354,6 +370,7 @@ public class CombatManager : MonoBehaviour
         Debug.LogWarning($"Enemy {enemy.unitName} ran out of castable spells.");
         return null;
     }
+
     private Unit ChooseRandomTarget(List<Unit> targets)
     {
         if (targets.Count == 0) return null;
@@ -395,4 +412,46 @@ public class CombatManager : MonoBehaviour
         messageLog.ClearMessages();
     }
 
+    private void ConfirmEndBattle()
+    {
+        if (victory)
+        {
+            if (NodeMapGenerator.Instance.CurrentNode.EncounterType == EncounterType.BOSS)
+            {
+                CleanupBeforeSceneLoad();
+                SceneManager.LoadScene("MainMenuScene");
+            }
+            else
+            {
+                PrepareDataToSave();
+                FileOperationsManager.Instance.SaveGame();
+                CleanupBeforeSceneLoad();
+                SceneManager.LoadScene("MapScene");
+            }
+        }
+        else
+        {
+            CleanupBeforeSceneLoad();
+            SceneManager.LoadScene("MainMenuScene");
+        }
+    }
+
+    public void ShowDialogWindow()
+    {
+        if (DialogWindowManager == null)
+        {
+            GameObject dialogCanvas = GameObject.Find("DialogCanvas");
+            Transform dialogPanelTransform = dialogCanvas.transform.Find("DialogPanel");
+            DialogWindowManager = dialogPanelTransform.GetComponent<DialogWindowManager>();
+        }
+        if (victory)
+        {
+            DialogWindowManager.SetMessage($"Victory!\nAll units gained {totalExp} exp.\nGame saved.");
+        }
+        else
+        {
+            DialogWindowManager.SetMessage($"Defeat!\nYou can try again or start a new game.");
+        }
+        DialogWindowManager.ShowWindow();
+    }
 }

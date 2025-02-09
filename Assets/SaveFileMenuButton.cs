@@ -44,7 +44,7 @@ public class SaveFileMenuButton : MonoBehaviour
         }
         else
         {
-            saveText.text = $"New {SaveSlotNumber}";
+            saveText.text = $"New";
             saveData.text = "No Save";
             deleteButton.interactable = false;
             deleteButton.image.color = Color.grey;

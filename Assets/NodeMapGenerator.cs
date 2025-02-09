@@ -8,12 +8,12 @@ public class NodeMapGenerator : MonoBehaviour
     public static NodeMapGenerator Instance { get; private set; }
 
     public List<List<MapNode>> Map;
-    public int CurrentFloor;
+    public MapNode CurrentNode;
 
-    public readonly int NumFloors = 9;
-    public readonly int FloorWidth = 5;
-    private readonly int MaxNodesPerFloor = 5;
-    private readonly int MaxLengthOfStraigthPath = 3;
+    public readonly int NumFloors = 10; // length of map, number of horizontal steps from start to end
+    public readonly int FloorWidth = 5; // width of a map, number of different vertical positions possible to generate
+    private readonly int MaxNodesPerFloor = 5; // determines possible variations of paths, lower means less branching nodes
+    private readonly int MaxLengthOfStraigthPath = 3; // used to avoid dull-looking map shapes
 
 
     private void Awake()
@@ -56,7 +56,7 @@ public class NodeMapGenerator : MonoBehaviour
         Map.Add(floor0);
 
         // Generate next floors
-        for (int floorIndex = 1; floorIndex < NumFloors; floorIndex++)
+        for (int floorIndex = 1; floorIndex < NumFloors - 1; floorIndex++)
         {
             List<MapNode> currentFloor = new List<MapNode>();
             List<MapNode> previousFloor = Map[floorIndex - 1];
@@ -83,6 +83,19 @@ public class NodeMapGenerator : MonoBehaviour
             CorrectPaths(Map[floorIndex - 1]);
             Map.Add(currentFloor);
         }
+
+        // Add boss floor
+        List<MapNode> lastFloor = new List<MapNode>();
+        MapNode bossNode = new MapNode(NumFloors, FloorWidth / 2);
+        lastFloor.Add(bossNode);
+
+        foreach (MapNode baseNode in Map[NumFloors - 2])
+        {
+            baseNode.Connect(bossNode);
+        }
+
+        Map.Add(lastFloor);
+
         AssignEncounterTypes();
     }
 
@@ -173,7 +186,7 @@ public class NodeMapGenerator : MonoBehaviour
     private void AssignEncounterTypes()
     {
         int middlePoint = NumFloors / 2;
-        int endPoint = NumFloors - 1;
+        int endPoint = NumFloors - 2;
         foreach (var floor in Map)
         {
             foreach (MapNode node in floor)
@@ -188,6 +201,10 @@ public class NodeMapGenerator : MonoBehaviour
                 {
                     node.EncounterType = EncounterType.REST;
                 }
+                else if (node.X > endPoint)
+                {
+                    node.EncounterType = EncounterType.BOSS;
+                }
                 // Assign random encounter type, reroll if necessary
                 else
                 {
@@ -201,7 +218,8 @@ public class NodeMapGenerator : MonoBehaviour
                             if (prevNode.EncounterType != EncounterType.BATTLE
                                 && prevNode.EncounterType == node.EncounterType
                                 || node.EncounterType == EncounterType.REST
-                                && (node.X == middlePoint - 1 || node.X == endPoint - 1))
+                                && (node.X == middlePoint - 1 
+                                || node.X == endPoint - 1))
                             {
                                 hasConflict = true;
                                 break;
@@ -223,7 +241,7 @@ public class NodeMapGenerator : MonoBehaviour
             throw new IOException("Tried to get MapData before it was initialized");
         }
 
-        MapData mapData = new MapData(CurrentFloor);
+        MapData mapData = new MapData();
         for (int floorNum = 0; floorNum < Map.Count; floorNum++)
         {
             var floor = Map[floorNum];
@@ -250,21 +268,30 @@ public class NodeMapGenerator : MonoBehaviour
 
     public void LoadMapFromData(MapData mapData)
     {
-        if (mapData == null || mapData.Floors == null || mapData.Floors.Count == 0)
+        if (mapData == null 
+            || mapData.Floors == null 
+            || mapData.Floors.Count == 0)
         {
             GenerateMap();
-            CurrentFloor = -1;
+            CurrentNode = null;
             return;
         }
-        CurrentFloor = mapData.CurrentFloor;
-        Map = new List<List<MapNode>>();
 
+        Map = new List<List<MapNode>>();
         foreach (FloorData floorData in mapData.Floors)
         {
             List<MapNode> floor = new List<MapNode>();
             foreach (MapNodeData nodeData in floorData.Nodes)
             {
-                floor.Add(new MapNode(nodeData.X, nodeData.Y, nodeData.EncounterType, nodeData.IsPlayerHere));
+                MapNode mapNode = new MapNode(nodeData.X,
+                    nodeData.Y,
+                    nodeData.EncounterType,
+                    nodeData.IsPlayerHere);
+                floor.Add(mapNode);
+                if (mapNode.IsPlayerHere)
+                {
+                    CurrentNode = mapNode;
+                }
             }
             Map.Add(floor);
         }
@@ -332,7 +359,7 @@ public class NodeMapGenerator : MonoBehaviour
 
     private void DebugSaveMapToFile(string filePath)
     {
-        MapData mapData = new MapData(CurrentFloor);
+        MapData mapData = new MapData();
         for (int i = 0; i < Map.Count; i++)
         {
             var floor = Map[i];

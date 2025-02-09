@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -7,40 +8,43 @@ using UnityEngine.UI;
 public class UpgradeSpellPanel : MonoBehaviour
 {
     private Dictionary<string, Spell> spellDefsCache;
-    private SaveFileData saveData;
+    private SaveFileData SaveData;
     private GameObject UpgradeSpellPanelUnity;
+    private DialogWindowManager DialogWindowManager; // needs to be hidden if user tries to open SpellPanel without closing dialog
+    private TextMeshProUGUI SkillsButtonTextUnity;
     private bool IsActive = true;
     private int ShownUnit = 0;
     private Unit initializedUnit;
     private const int MaxDisplayedSpells = 12;
     private Color LightBlue = new Color(0f, 0.7f, 1f);
+    private bool isTextFlashing = false;
 
     private void Start()
     {
         spellDefsCache = FileOperationsManager.Instance.LoadSpellDefs();
-        saveData = FileOperationsManager.Instance.LoadSaveData();
+        SaveData = FileOperationsManager.Instance.LoadSaveData();
         UpgradeSpellPanelUnity = GameObject.Find("UpgradeSpellPanel");
+        SkillsButtonTextUnity = GameObject.Find("B_Skills").GetComponentInChildren<TextMeshProUGUI>();
         InitializeUpgradeSpellPanel();
         ShowOrHide();
+        StartFlashingButtonText();
     }
 
     public void ShowOrHide()
     {
-        if (UpgradeSpellPanelUnity != null)
+        IsActive = !IsActive;
+        UpgradeSpellPanelUnity.SetActive(IsActive);
+        if (IsActive)
         {
-            IsActive = !IsActive;
-            UpgradeSpellPanelUnity.SetActive(IsActive);
-            if (IsActive)
-            {
-                ShowForUnit();
-            }
+            TryHideDialogWindow();
+            ShowForUnit();
         }
     }
 
     public void ShowNext()
     {
         ShownUnit++;
-        ShownUnit %= saveData.playerUnits.Length;
+        ShownUnit %= SaveData.playerUnits.Length;
         ShowForUnit();
     }
 
@@ -49,9 +53,54 @@ public class UpgradeSpellPanel : MonoBehaviour
         ShownUnit--;
         if (ShownUnit < 0)
         {
-            ShownUnit += saveData.playerUnits.Length;
+            ShownUnit += SaveData.playerUnits.Length;
         }
         ShowForUnit();
+    }
+
+    private void StartFlashingButtonText()
+    {
+        if (!isTextFlashing)
+        {
+            isTextFlashing = true;
+            StartCoroutine(FlashButtonText());
+        }
+    }
+
+    private IEnumerator FlashButtonText()
+    {
+        while (true)
+        {
+            if (SkillsButtonTextUnity != null)
+            {
+                if (SkillsButtonTextUnity.color != Color.white)
+                {
+                    SkillsButtonTextUnity.color = Color.white;
+                }
+                else
+                {
+                    if (SaveData.playerUnits.Any(unit => unit.SkillPoints > 0))
+                    {
+                        SkillsButtonTextUnity.color = Color.green;
+                    }
+                }
+            }
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    private void TryHideDialogWindow()
+    {
+        if (DialogWindowManager == null)
+        {
+            GameObject dialogCanvas = GameObject.Find("DialogCanvas");
+            Transform dialogPanelTransform = dialogCanvas.transform.Find("DialogPanel");
+            DialogWindowManager = dialogPanelTransform.GetComponent<DialogWindowManager>();
+        }
+        if (DialogWindowManager != null)
+        {
+            DialogWindowManager.HideWindow();
+        }
     }
 
     private void InitializeUpgradeSpellPanel()
@@ -113,7 +162,7 @@ public class UpgradeSpellPanel : MonoBehaviour
     {
         GameObject unitGameObject = GameObject.Find("Player");
         initializedUnit = unitGameObject.GetComponent<Unit>();
-        initializedUnit.InitializeFromData(saveData.playerUnits[ShownUnit], spellDefsCache);
+        initializedUnit.InitializeFromData(SaveData.playerUnits[ShownUnit], spellDefsCache);
         initializedUnit.ApplyMask();
 
         if (initializedUnit == null || initializedUnit.AvailableSpells == null)
@@ -190,7 +239,7 @@ public class UpgradeSpellPanel : MonoBehaviour
         string thisSpellName = currentSpell.Name;
         string unitSpellName = GetUnitSpellName(thisSpellName);
 
-        if (IsSameOrWorse(thisSpellName, unitSpellName))
+        if (IsSameOrWorse(thisSpellName, unitSpellName)) // Already learned
         {
             frame.color = LightBlue;
             button.interactable = true;
@@ -255,7 +304,7 @@ public class UpgradeSpellPanel : MonoBehaviour
         string unitSpellName = GetUnitSpellName(targetSpell.Name);
         if (unitSpellName != null && IsSameOrWorse(targetSpell.Name, unitSpellName)) return;
 
-        UnitData unitData = saveData.playerUnits[ShownUnit];
+        UnitData unitData = SaveData.playerUnits[ShownUnit];
         unitData.SkillPoints -= 1;
         if (unitSpellName != null)
         {

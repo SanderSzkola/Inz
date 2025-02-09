@@ -121,7 +121,6 @@ public class Unit : MonoBehaviour
         }
     }
 
-
     public void ApplyMask()
     {
         // only for player unit
@@ -242,7 +241,7 @@ public class Unit : MonoBehaviour
         ChangeMPBy(MPRegen);
     }
 
-    public IEnumerator TakeDamageAnim(float duration = 0.3f, float intensity = 1f)
+    public IEnumerator TakeDamageAnim(float duration = 0.5f, float intensity = 1f)
     {
         // Animation
         float elapsedTime = 0f;
@@ -271,7 +270,7 @@ public class Unit : MonoBehaviour
         int direction = isPlayerUnit ? 1 : -1;
         float moveSpeed = 15f;
         Vector3 startPosition = transform.position;
-        Vector3 actionPosition = transform.position + new Vector3(1 * direction, 0, 0);
+        Vector3 actionPosition = transform.position + new Vector3(2 * direction, 0, 0);
 
         // Move to action position
         while (Vector3.Distance(transform.position, actionPosition) > 0.1f)
