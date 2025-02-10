@@ -446,7 +446,14 @@ public class CombatManager : MonoBehaviour
         }
         if (victory)
         {
-            DialogWindowManager.SetMessage($"Victory!\nAll units gained {totalExp} exp.\nGame saved.");
+            if (NodeMapGenerator.Instance.CurrentNode.EncounterType == EncounterType.BOSS)
+            {
+                DialogWindowManager.SetMessage($"Victory!\nYou have defeated the final boss! Game is finished.");
+            }
+            else
+            {
+                DialogWindowManager.SetMessage($"Victory!\nAll units gained {totalExp} exp.\nGame saved.");
+            }
         }
         else
         {
