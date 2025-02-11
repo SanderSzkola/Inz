@@ -73,7 +73,7 @@ public class CombatManager : MonoBehaviour
         int currentLevel = node.EncounterType == EncounterType.HARDBATTLE ? node.X + 2 : node.X;
         currentLevel = Mathf.Min(currentLevel, levelDefs.Count - 2);
         if (node.EncounterType == EncounterType.BOSS) currentLevel = levelDefs.Count - 1;
-        Random.InitState(FileOperationsManager.Instance.GetRandomSeedFromSave() + currentLevel); // constant seed to make loading previous save deterministic
+        UnityEngine.Random.InitState(FileOperationsManager.Instance.GetRandomSeedFromSave() + currentLevel); // constant seed to make loading previous save deterministic
         List<UnitData> enemyData = PrepareEnemiesForLevel(levelDefs[currentLevel]);
 
         for (int i = 0; i < enemyData.Count; i++)
@@ -104,7 +104,7 @@ public class CombatManager : MonoBehaviour
     private List<UnitData> PrepareEnemiesForLevel(LevelVariationsList levelDef)
     {
         List<UnitData> enemyData = new List<UnitData>();
-        string levelVariation = levelDef.levelVariations[Random.Range(0, levelDef.levelVariations.Count)];
+        string levelVariation = levelDef.levelVariations[UnityEngine.Random.Range(0, levelDef.levelVariations.Count)];
         foreach (string enemyType in levelVariation.Split(','))
         {
             string type = enemyType.Trim();
@@ -280,13 +280,15 @@ public class CombatManager : MonoBehaviour
         }
         else if (enemyUnits.Contains(unit))
         {
+            float expMult = NodeMapGenerator.Instance.CurrentNode.EncounterType == EncounterType.HARDBATTLE ? 1.2f : 1f;
+            int calculatedExp = (int)(unit.ExpOnDeath * expMult);
             messageLog.AddMessage($"<color=yellow>{unit.unitName} has been defeated.</color> All units gained {unit.ExpOnDeath} exp. ");
             foreach (Unit playerUnit in playerUnits)
             {
-                playerUnit.Exp += unit.ExpOnDeath;
+                playerUnit.Exp += calculatedExp;
             }
             enemyUnits.Remove(unit);
-            totalExp += unit.ExpOnDeath;
+            totalExp += calculatedExp;
         }
 
         CheckBattleEndConditions();
@@ -448,7 +450,7 @@ public class CombatManager : MonoBehaviour
         {
             if (NodeMapGenerator.Instance.CurrentNode.EncounterType == EncounterType.BOSS)
             {
-                DialogWindowManager.SetMessage($"Victory!\nYou have defeated the final boss! Game is finished.");
+                DialogWindowManager.SetMessage($"Victory!\nYou have defeated the final boss! Your quest is done.");
             }
             else
             {
