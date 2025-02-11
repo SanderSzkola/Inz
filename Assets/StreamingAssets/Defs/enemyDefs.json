@@ -1,0 +1,290 @@
+{
+    "enemyDefs": [
+      {
+        "key": "Wolf",
+        "unitData": {
+          "Name": "Wolf",
+          "MaxHP": 220,
+          "CurrHP": 220,
+          "MaxMP": 50,
+          "CurrMP": 50,
+          "MPRegen": 5,
+          "PAtk": 50,
+          "PDef": 10,
+          "MAtk": 0,
+          "MDef": 10,
+          "ExpOnDeath": 20,
+          "SpellNames": [
+            "Bite",
+            "Pounce"
+          ],
+          "FireRes": 0,
+          "IceRes": 10,
+          "ColliderOffsetX": 0,
+          "ColliderOffsetY": 1,
+          "ColliderSizeX": 2.5,
+          "ColliderSizeY": 2,
+          "SpritePosX": 0,
+          "SpritePosY": 1,
+          "SpritePosZ": 0,
+          "SpriteWidth": 1.37,
+          "SpriteHeight": 0.94
+        }
+      },
+      {
+        "key": "Wolf_Ice",
+        "unitData": {
+          "Name": "Ice wolf",
+          "MaxHP": 350,
+          "CurrHP": 350,
+          "MaxMP": 80,
+          "CurrMP": 80,
+          "MPRegen": 5,
+          "PAtk": 60,
+          "PDef": 10,
+          "MAtk": 60,
+          "MDef": 10,
+          "ExpOnDeath": 25,
+          "SpellNames": [
+            "Bite",
+            "Pounce",
+            "Ice Paw"
+          ],
+          "FireRes": -20,
+          "IceRes": 60,
+          "ColliderOffsetX": 0,
+          "ColliderOffsetY": 1,
+          "ColliderSizeX": 2.5,
+          "ColliderSizeY": 2,
+          "SpritePosX": 0,
+          "SpritePosY": 1,
+          "SpritePosZ": 0,
+          "SpriteWidth": 1.37,
+          "SpriteHeight": 0.94
+        }
+      },
+      {
+        "key": "Wolf_Fire",
+        "unitData": {
+          "Name": "Fire wolf",
+          "MaxHP": 350,
+          "CurrHP": 350,
+          "MaxMP": 80,
+          "CurrMP": 80,
+          "MPRegen": 5,
+          "PAtk": 60,
+          "PDef": 10,
+          "MAtk": 60,
+          "MDef": 10,
+          "ExpOnDeath": 25,
+          "SpellNames": [
+            "Bite",
+            "Pounce",
+            "Fire Paw"
+          ],
+          "FireRes": 60,
+          "IceRes": -20,
+          "ColliderOffsetX": 0,
+          "ColliderOffsetY": 1,
+          "ColliderSizeX": 2.5,
+          "ColliderSizeY": 2,
+          "SpritePosX": 0,
+          "SpritePosY": 1,
+          "SpritePosZ": 0,
+          "SpriteWidth": 1.37,
+          "SpriteHeight": 0.94
+        }
+      },
+      {
+        "key": "Fox",
+        "unitData": {
+          "Name": "Fox",
+          "MaxHP": 100,
+          "CurrHP": 100,
+          "MaxMP": 50,
+          "CurrMP": 50,
+          "MPRegen": 5,
+          "PAtk": 30,
+          "PDef": 5,
+          "MAtk": 0,
+          "MDef": 5,
+          "ExpOnDeath": 10,
+          "SpellNames": [
+            "Bite",
+            "Pounce"
+          ],
+          "FireRes": 15,
+          "IceRes": 15,
+          "ColliderOffsetX": 0,
+          "ColliderOffsetY": 0.9,
+          "ColliderSizeX": 2.2,
+          "ColliderSizeY": 1.8,
+          "SpritePosX": 0,
+          "SpritePosY": 1,
+          "SpritePosZ": 0,
+          "SpriteWidth": 1.37,
+          "SpriteHeight": 0.94
+        }
+      },
+      {
+        "key": "Fox_Fire",
+        "unitData": {
+          "Name": "Fire fox",
+          "MaxHP": 200,
+          "CurrHP": 200,
+          "MaxMP": 50,
+          "CurrMP": 50,
+          "MPRegen": 5,
+          "PAtk": 40,
+          "PDef": 5,
+          "MAtk": 40,
+          "MDef": 5,
+          "ExpOnDeath": 15,
+          "SpellNames": [
+            "Bite",
+            "Pounce",
+            "Fire Paw"
+          ],
+          "FireRes": 70,
+          "IceRes": 0,
+          "ColliderOffsetX": 0,
+          "ColliderOffsetY": 0.9,
+          "ColliderSizeX": 2.2,
+          "ColliderSizeY": 1.8,
+          "SpritePosX": 0,
+          "SpritePosY": 1,
+          "SpritePosZ": 0,
+          "SpriteWidth": 1.37,
+          "SpriteHeight": 0.94
+        }
+      },
+      {
+        "key": "Fox_Ice",
+        "unitData": {
+          "Name": "Ice fox",
+          "MaxHP": 200,
+          "CurrHP": 200,
+          "MaxMP": 50,
+          "CurrMP": 50,
+          "MPRegen": 5,
+          "PAtk": 40,
+          "PDef": 5,
+          "MAtk": 40,
+          "MDef": 5,
+          "ExpOnDeath": 15,
+          "SpellNames": [
+            "Bite",
+            "Pounce",
+            "Ice Paw"
+          ],
+          "FireRes": 0,
+          "IceRes": 70,
+          "ColliderOffsetX": 0,
+          "ColliderOffsetY": 0.9,
+          "ColliderSizeX": 2.2,
+          "ColliderSizeY": 1.8,
+          "SpritePosX": 0,
+          "SpritePosY": 1,
+          "SpritePosZ": 0,
+          "SpriteWidth": 1.37,
+          "SpriteHeight": 0.94
+        }
+      },
+      {
+        "key": "Boar",
+        "unitData": {
+          "Name": "Boar",
+          "MaxHP": 220,
+          "CurrHP": 220,
+          "MaxMP": 50,
+          "CurrMP": 50,
+          "MPRegen": 0,
+          "PAtk": 30,
+          "PDef": 15,
+          "MAtk": 10,
+          "MDef": 15,
+          "ExpOnDeath": 15,
+          "SpellNames": [
+            "Bite",
+            "Charge"
+          ],
+          "FireRes": 0,
+          "IceRes": 0,
+          "ColliderOffsetX": 0,
+          "ColliderOffsetY": 1.2,
+          "ColliderSizeX": 3.1,
+          "ColliderSizeY": 2.2,
+          "SpritePosX": 0,
+          "SpritePosY": 1.2,
+          "SpritePosZ": 0,
+          "SpriteWidth": 2,
+          "SpriteHeight": 1.3
+        }
+      },
+      {
+        "key": "Bear",
+        "unitData": {
+          "Name": "Bear",
+          "MaxHP": 700,
+          "CurrHP": 700,
+          "MaxMP": 100,
+          "CurrMP": 100,
+          "MPRegen": 10,
+          "PAtk": 90,
+          "PDef": 40,
+          "MAtk": 0,
+          "MDef": 20,
+          "ExpOnDeath": 50,
+          "SpellNames": [
+            "Bite",
+            "Scratch",
+            "Charge"
+          ],
+          "FireRes": 10,
+          "IceRes": 35,
+          "ColliderOffsetX": 0,
+          "ColliderOffsetY": 1.6,
+          "ColliderSizeX": 5,
+          "ColliderSizeY": 3.2,
+          "SpritePosX": 0,
+          "SpritePosY": 1.6,
+          "SpritePosZ": 0,
+          "SpriteWidth": 2.55,
+          "SpriteHeight": 1.6
+        }
+      },
+      {
+        "key": "Wendigo",
+        "unitData": {
+          "Name": "Wendigo",
+          "MaxHP": 2000,
+          "CurrHP": 2000,
+          "MaxMP": 200,
+          "CurrMP": 200,
+          "MPRegen": 10,
+          "PAtk": 120,
+          "PDef": 50,
+          "MAtk": 120,
+          "MDef": 40,
+          "ExpOnDeath": 300,
+          "SpellNames": [
+            "Bite",
+            "Charge",
+            "Rend", 
+            "Dark Touch"
+          ],
+          "FireRes": 20,
+          "IceRes": 20,
+          "ColliderOffsetX": 0,
+          "ColliderOffsetY": 2.6,
+          "ColliderSizeX": 3.3,
+          "ColliderSizeY": 5,
+          "SpritePosX": 0,
+          "SpritePosY": 2.6,
+          "SpritePosZ": 0,
+          "SpriteWidth": 1.6,
+          "SpriteHeight": 2.6
+        }
+      }
+    ]
+  }

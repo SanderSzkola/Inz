@@ -1,9 +1,7 @@
-using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.XR;
 
 public class Unit : MonoBehaviour
 {
@@ -11,20 +9,25 @@ public class Unit : MonoBehaviour
     public bool canAct = true;
     public bool isPlayerUnit = false;
 
-    public int maxHP;
-    public int currHP;
-    public int maxMP;
-    public int currMP;
-    public int mpRegen;
-    public int pAtk;
-    public int pDef;
-    public int mAtk;
-    public int mDef;
+    public int MaxHP;
+    public int CurrHP;
+    public int MaxMP;
+    public int CurrMP;
+    public int MPRegen;
+    public int PAtk;
+    public int PDef;
+    public int MAtk;
+    public int MDef;
+
+    public int Exp;
+    public int ExpToNextLevel;
+    public int SkillPoints;
+    public int ExpOnDeath;
 
     public List<Spell> AvailableSpells = new List<Spell>();
 
-    public int fireRes;
-    public int iceRes;
+    public int FireRes;
+    public int IceRes;
 
     public GameObject statusPanel;
     private GameObject selectionIndicator;
@@ -49,48 +52,39 @@ public class Unit : MonoBehaviour
     public float SpriteWidth;
     public float SpriteHeight;
 
-    public void InitializeFromPrefab(CombatManager manager, List<Spell> globalSpellList, GameObject selectionIndicator, UnitData data)
+    public void InitializeFromPrefab(CombatManager manager, Dictionary<string, Spell> globalSpellDict, GameObject selectionIndicator, UnitData data)
     {
         combatManager = manager;
-        InitializeFromData(data, globalSpellList);
-        if (!isPlayerUnit)
-        {
-            // TODO: enemies have different sizes, prefab only fits for wolf, need to read and fix parameters in unity components
-        }
+        InitializeFromData(data, globalSpellDict);
 
         this.selectionIndicator = selectionIndicator;
         this.selectionIndicator.SetActive(false);
         RefreshSelectorColor();
-
-        // only for player unit
-        Transform maskTransform = transform.Find("mage/mask");
-        if (maskTransform != null)
-        {
-            maskSpriteRenderer = maskTransform.GetComponent<SpriteRenderer>();
-            if (maskSpriteRenderer != null)
-            {
-                ApplyMask();
-            }
-        }
+        ApplyMask();
     }
 
-    public void InitializeFromData(UnitData data, List<Spell> globalSpellList)
+    public void InitializeFromData(UnitData data, Dictionary<string, Spell> globalSpellDict)
     {
         unitName = data.Name;
         isPlayerUnit = data.IsPlayerUnit;
 
-        maxHP = data.MaxHP;
-        currHP = data.CurrHP;
-        maxMP = data.MaxMP;
-        currMP = data.CurrMP;
-        mpRegen = data.MPRegen;
-        pAtk = data.PAtk;
-        pDef = data.PDef;
-        mAtk = data.MAtk;
-        mDef = data.MDef;
+        MaxHP = data.MaxHP;
+        CurrHP = data.CurrHP;
+        MaxMP = data.MaxMP;
+        CurrMP = data.CurrMP;
+        MPRegen = data.MPRegen;
+        PAtk = data.PAtk;
+        PDef = data.PDef;
+        MAtk = data.MAtk;
+        MDef = data.MDef;
 
-        fireRes = data.FireRes;
-        iceRes = data.IceRes;
+        Exp = data.Exp;
+        ExpToNextLevel = data.ExpToNextLevel;
+        SkillPoints = data.SkillPoints;
+        ExpOnDeath = data.ExpOnDeath == 0 ? 20 : data.ExpOnDeath;
+
+        FireRes = data.FireRes;
+        IceRes = data.IceRes;
 
         maskRed = data.maskRed;
         maskGreen = data.maskGreen;
@@ -107,39 +101,39 @@ public class Unit : MonoBehaviour
         SpriteHeight = data.SpriteHeight;
 
         AvailableSpells.Clear();
-        if (data.SpellNames == null)
+        if (data.SpellNames == null || data.SpellNames.Count == 0)
         {
             Debug.LogError($"Unit '{unitName}' has no spells.");
             return;
         }
-        string[] spellNames = data.SpellNames.Split(',');
-        foreach (string spellName in spellNames)
+
+        foreach (string spellName in data.SpellNames)
         {
             string trimmedName = spellName.Trim();
-            Spell matchingSpell = globalSpellList.FirstOrDefault(spell => spell.Name.Equals(trimmedName, StringComparison.OrdinalIgnoreCase));
-            if (matchingSpell != null)
+            if (globalSpellDict.TryGetValue(trimmedName, out Spell matchingSpell))
             {
                 AvailableSpells.Add(matchingSpell.Clone());
             }
             else
             {
-                Debug.LogWarning($"Spell '{trimmedName}' not found in global spell list for unit {data.Name}.");
+                Debug.LogWarning($"Spell '{trimmedName}' not found in global spell dictionary for unit {data.Name}.");
             }
         }
     }
 
-
-    private void ApplyMask()
+    public void ApplyMask()
     {
-        // Apply mask color based on the Unit parameters
-        if (maskRed == 1f && maskGreen == 1f && maskBlue == 1f) // default detected, randomize
+        // only for player unit
+        Transform maskTransform = transform.Find("mage/mask");
+        if (maskTransform != null)
         {
-            maskRed = UnityEngine.Random.Range(0f, 1f);
-            maskGreen = UnityEngine.Random.Range(0f, 1f);
-            maskBlue = UnityEngine.Random.Range(0f, 1f);
+            maskSpriteRenderer = maskTransform.GetComponent<SpriteRenderer>();
+            if (maskSpriteRenderer != null)
+            {
+                Color maskColor = new Color(maskRed, maskGreen, maskBlue, 1f);
+                maskSpriteRenderer.color = maskColor;
+            }
         }
-        Color maskColor = new Color(maskRed, maskGreen, maskBlue, 1f);
-        maskSpriteRenderer.color = maskColor;
     }
 
     public void RefreshSelectorColor()
@@ -172,48 +166,43 @@ public class Unit : MonoBehaviour
             hpSlider = statusPanel.transform.Find("HPBar").GetComponent<Slider>();
             mpSlider = statusPanel.transform.Find("MPBar").GetComponent<Slider>();
         }
-        hpSlider.value = (float)currHP / maxHP;
-        mpSlider.value = (float)currMP / maxMP;
+        hpSlider.value = (float)CurrHP / MaxHP;
+        mpSlider.value = (float)CurrMP / MaxMP;
     }
 
     public void ChangeHPBy(int value)
     {
-        currHP += value;
-        currHP = Mathf.Clamp(currHP, 0, maxHP); // Prevent overflow or underflow.
+        CurrHP += value;
+        CurrHP = Mathf.Clamp(CurrHP, 0, MaxHP); // Prevent overflow or underflow.
         UpdateStatusPanel();
     }
 
     public void ChangeMPBy(int value)
     {
-        currMP += value;
-        currMP = Mathf.Clamp(currMP, 0, maxMP);
+        CurrMP += value;
+        CurrMP = Mathf.Clamp(CurrMP, 0, MaxMP);
         UpdateStatusPanel();
     }
 
     public int GetResistance(Element element) // where is my dict :(
     {
-        if (element == Element.Fire) return fireRes;
-        if (element == Element.Ice) return iceRes;
+        if (element == Element.Fire) return FireRes;
+        if (element == Element.Ice) return IceRes;
         return 0;
     }
 
     public bool CanAffordCast(int value)
     {
-        return currMP >= value;
+        return CurrMP >= value;
     }
 
     public void ApplyDamage(int damage)
     {
         ChangeHPBy(-damage);
-
-        if (currHP <= 0)
-        {
-            canAct = false;
-            Die();
-        }
+        StartCoroutine(TakeDamageAnim());
     }
 
-    private void Die() // TODO: add logic to revieve player units?
+    private void Die()
     {
         combatManager.RemoveUnit(this);
         Destroy(selectionIndicator);
@@ -223,7 +212,10 @@ public class Unit : MonoBehaviour
 
     void OnMouseDown()
     {
-        combatManager.SelectUnit(this);
+        if (combatManager != null)
+        {
+            combatManager.SelectUnit(this);
+        }
     }
 
     public void RefreshSelection(Unit activePlayerUnit, Unit targetUnit)
@@ -246,44 +238,52 @@ public class Unit : MonoBehaviour
         {
             spell.ReduceCooldown();
         }
-        ChangeHPBy(mpRegen);
+        ChangeMPBy(MPRegen);
     }
-}
 
-[System.Serializable]
-public class UnitData
-{
-    // Parameters
-    public string Name;
-    public bool IsPlayerUnit;
+    public IEnumerator TakeDamageAnim(float duration = 0.5f, float intensity = 1f)
+    {
+        // Animation
+        float elapsedTime = 0f;
+        Vector3 originalPosition = transform.position;
 
-    public int MaxHP;
-    public int CurrHP;
-    public int MaxMP;
-    public int CurrMP;
-    public int MPRegen;
-    public int PAtk;
-    public int PDef;
-    public int MAtk;
-    public int MDef;
+        while (elapsedTime < duration)
+        {
+            float offsetX = Mathf.Sin(Time.time * 50f) * intensity * (duration - elapsedTime) / duration;
+            transform.position = originalPosition + new Vector3(offsetX, 0, 0);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
 
-    public int FireRes;
-    public int IceRes;
+        transform.position = originalPosition;
 
-    public string SpellNames;
+        // Logic that needs to happen AFTER animation or it errors
+        if (CurrHP <= 0)
+        {
+            canAct = false;
+            Die();
+        }
+    }
 
-    // Graphics
-    public float maskRed;
-    public float maskGreen;
-    public float maskBlue;
+    public IEnumerator TakeActionAnim()
+    {
+        int direction = isPlayerUnit ? 1 : -1;
+        float moveSpeed = 15f;
+        Vector3 startPosition = transform.position;
+        Vector3 actionPosition = transform.position + new Vector3(2 * direction, 0, 0);
 
-    public float ColliderOffsetX;
-    public float ColliderOffsetY;
-    public float ColliderSizeX;
-    public float ColliderSizeY;
-    public float SpritePosX;
-    public float SpritePosY;
-    public float SpritePosZ;
-    public float SpriteWidth;
-    public float SpriteHeight;
+        // Move to action position
+        while (Vector3.Distance(transform.position, actionPosition) > 0.1f)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, actionPosition, moveSpeed * Time.deltaTime);
+            yield return null;
+        }
+
+        // Move back to start position
+        while (Vector3.Distance(transform.position, startPosition) > 0.1f)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, startPosition, moveSpeed * 0.5f * Time.deltaTime);
+            yield return null;
+        }
+    }
 }
